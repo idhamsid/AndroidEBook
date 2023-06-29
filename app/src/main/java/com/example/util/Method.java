@@ -25,6 +25,7 @@ import androidx.appcompat.app.AlertDialog;
 import com.example.androidebookapps.BookDetailsActivity;
 import com.example.androidebookapps.R;
 import com.example.item.DownloadList;
+import com.example.item.SubCatListBook;
 import com.example.response.FavoriteRP;
 import com.example.rest.ApiClient;
 import com.example.rest.ApiInterface;
@@ -43,7 +44,10 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -60,7 +64,8 @@ public class Method {
     public static boolean isDownload = true;
     public String themSetting = "them";
     public String notification = "notification";
-
+    public static final String LASTVIEW = "WebList_LastView";
+    public static final String PREFS_NAME = "BOOK_LASTVIEW";
     @SuppressLint("CommitPrefEdits")
     public Method(Activity activity) {
         this.activity = activity;
@@ -74,6 +79,84 @@ public class Method {
         pref = activity.getSharedPreferences(myPreference, 0); // 0 - for private mode
         editor = pref.edit();
     }
+
+
+
+
+    // This four methods are used for maintaining lastread.
+    public void saveFavorites(Context context, List<SubCatListBook> favorites) {
+        SharedPreferences settings;
+        SharedPreferences.Editor editor;
+
+        settings = context.getSharedPreferences(PREFS_NAME,
+                Context.MODE_PRIVATE);
+        editor = settings.edit();
+
+        Gson gson = new Gson();
+        String jsonFavorites = gson.toJson(favorites);
+
+        editor.putString(LASTVIEW, jsonFavorites);
+
+        editor.commit();
+    }
+
+    public void addFavorite(Context context, String bookId, String page_num) {
+        Boolean cek = true;
+        List<SubCatListBook> favorites = getFavorites(context);
+        if (favorites == null)
+            favorites = new ArrayList<>();
+        SubCatListBook category = new SubCatListBook();
+        category.setPost_id(bookId);
+        category.setPage_num(page_num);
+        Log.w("adslog", "addFavorite: " + bookId);
+        if (favorites != null) {
+            for (SubCatListBook s : favorites) {
+                if (s.getPost_id().equals(bookId)) {
+                    Log.w("adslog", "addFavorite: favorites.indexOf(s); " + favorites.indexOf(s));
+                    int i = favorites.indexOf(s);
+                    favorites.get(i).setPage_num(page_num);
+                    cek = false;
+                }
+            }
+        }
+        if (cek) {
+            Log.w("adslog", "addFavorite: new ");
+            favorites.add(category);
+        }
+        saveFavorites(context, favorites);
+    }
+
+    public void removeFavorite(Context context, SubCatListBook product) {
+        ArrayList<SubCatListBook> favorites = getFavorites(context);
+        if (favorites != null) {
+            favorites.remove(product);
+            saveFavorites(context, favorites);
+        }
+    }
+
+    public ArrayList<SubCatListBook> getFavorites(Context context) {
+        SharedPreferences settings;
+        List<SubCatListBook> favorites;
+
+        settings = context.getSharedPreferences(PREFS_NAME,
+                Context.MODE_PRIVATE);
+
+        if (settings.contains(LASTVIEW)) {
+            String jsonFavorites = settings.getString(LASTVIEW, null);
+            Gson gson = new Gson();
+            SubCatListBook[] favoriteItems = gson.fromJson(jsonFavorites,
+                    SubCatListBook[].class);
+
+            favorites = Arrays.asList(favoriteItems);
+            favorites = new ArrayList<>(favorites);
+        } else
+            return null;
+
+        return (ArrayList<SubCatListBook>) favorites;
+    }
+
+
+
 
 
     public boolean isWelcome() {
