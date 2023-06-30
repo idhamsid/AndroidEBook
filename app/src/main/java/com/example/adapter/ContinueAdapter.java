@@ -25,18 +25,24 @@ import java.util.List;
 public class ContinueAdapter extends RecyclerView.Adapter<ContinueAdapter.ViewHolder> {
 
     Activity activity;
-    List<SubCatListBook> favListBookList;
+    public static List<SubCatListBook> favListBookList;
     OnClick onClick;
     int columnWidth;
     Method method;
+    private SetOnClickListener setOnClickListener;
 
-    public ContinueAdapter(Activity activity, List<SubCatListBook> favListBookList) {
+    public interface SetOnClickListener {
+        void onDelete(View viewHolder, int pos);
+    }
+
+    public ContinueAdapter(Activity activity, List<SubCatListBook> favListBookList, SetOnClickListener setOnClickListener) {
         this.activity = activity;
         this.favListBookList = favListBookList;
         method = new Method(activity);
         Resources r = activity.getResources();
         float padding = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, r.getDisplayMetrics());
         columnWidth = (int) ((method.getScreenWidth() - ((3 + 1) * padding)));
+        this.setOnClickListener = setOnClickListener;
     }
 
     @NotNull
@@ -49,21 +55,26 @@ public class ContinueAdapter extends RecyclerView.Adapter<ContinueAdapter.ViewHo
     @Override
     public void onBindViewHolder(@NotNull ViewHolder holder, final int position) {
 
-
         holder.rowFavoriteBinding.mcvFav.setVisibility(View.GONE);
+        holder.rowFavoriteBinding.mcvDelete.setVisibility(View.VISIBLE);
         holder.rowFavoriteBinding.llHomeBook.setLayoutParams(new LinearLayout.LayoutParams(columnWidth / 3, columnWidth / 2));
         holder.rowFavoriteBinding.tvHomeConTitle.setText(favListBookList.get(position).getPost_title());
 
-         if (!favListBookList.get(position).getPost_image().equals("")) {
+        if (!favListBookList.get(position).getPost_image().equals("")) {
             Glide.with(activity.getApplicationContext()).load(favListBookList.get(position).getPost_image())
                     .placeholder(R.drawable.placeholder_portable)
                     .into(holder.rowFavoriteBinding.ivHomeCont);
         }
-
+        holder.rowFavoriteBinding.mcvDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setOnClickListener.onDelete(v, position);
+            }
+        });
         holder.rowFavoriteBinding.rlFav.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AdInterstitialAds.ShowInterstitialAds(activity,holder.getBindingAdapterPosition(),onClick);
+                AdInterstitialAds.ShowInterstitialAds(activity, holder.getBindingAdapterPosition(), onClick);
             }
         });
 

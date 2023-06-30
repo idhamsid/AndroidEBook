@@ -92,7 +92,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/toolbar_main"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:visibility="gone">
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/ivUser"
@@ -188,7 +189,8 @@
         android:layout_below="@+id/llProfile"
         android:layout_marginTop="@dimen/_20px"
         android:background="@drawable/rectangle_bg_bottom_sheet_review"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:visibility="gone">
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
@@ -216,10 +218,10 @@
         android:id="@+id/llLogin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
         android:orientation="vertical"
-        android:visibility="gone">
+        android:visibility="visible">
 
         <ImageView
             android:id="@+id/imageView_noDataFound"

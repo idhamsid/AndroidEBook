@@ -264,4 +264,9 @@ public interface ApiInterface {
     @FormUrlEncoded
     Call<JsonObject> getPostDownloadData(@Field("data") String data);
 
+    //get book latest data
+    @POST("all_book")
+    @FormUrlEncoded
+    Call<SubCatListBookRP> getBookLatestDatas(@Field("data") String data);
+
 }

@@ -17,6 +17,7 @@ import com.example.adapter.AuthorListAdapter;
 import com.example.androidebookapps.databinding.ActivityAuthorDetailBinding;
 import com.example.item.AuthorDetailList;
 import com.example.item.BookRelatedList;
+import com.example.item.SubCatListBook;
 import com.example.response.AuthorDetailRP;
 import com.example.rest.ApiClient;
 import com.example.rest.ApiInterface;
@@ -57,7 +58,7 @@ public class AuthorDetailsActivity extends AppCompatActivity {
         setContentView(viewAuthorDetail.getRoot());
         method = new Method(AuthorDetailsActivity.this);
         method.forceRTLIfSupported();
-        relatedLists = new ArrayList<>();
+        relatedLists=new ArrayList<>();
 
         Intent intent = getIntent();
         authorId = intent.getStringExtra("AUTHOR_ID");
@@ -116,7 +117,7 @@ public class AuthorDetailsActivity extends AppCompatActivity {
 
                     AuthorDetailRP bookDetailRP = response.body();
 
-                    if (bookDetailRP != null && bookDetailRP.getSuccess().equals("1")) {
+                    if (bookDetailRP !=null && bookDetailRP.getSuccess().equals("1")) {
 
                         if (bookDetailRP.getAuthorDetailLists().size() != 0) {
                             viewAuthorDetail.clMain.setVisibility(View.VISIBLE);
@@ -199,7 +200,7 @@ public class AuthorDetailsActivity extends AppCompatActivity {
                             if (authorDetailList.getListAuthorBook().size() != 0) {
                                 for (int i = 0; i < authorDetailList.getListAuthorBook().size(); i++) {
                                     if (Constant.isNative) {
-                                        if (j % Constant.nativePosition == 0) {
+                                        if (j %Constant.nativePosition == 0) {
                                             relatedLists.add(null);
                                             j++;
                                         }
@@ -207,19 +208,35 @@ public class AuthorDetailsActivity extends AppCompatActivity {
                                     relatedLists.add(authorDetailList.getListAuthorBook().get(i));
                                     j++;
                                 }
-                                authorListAdapter = new AuthorListAdapter(AuthorDetailsActivity.this, relatedLists, authorDetailList.getAuthor_name());
+                                authorListAdapter = new AuthorListAdapter(AuthorDetailsActivity.this, relatedLists,authorDetailList.getAuthor_name());
                                 viewAuthorDetail.rvRelatedBook.setAdapter(authorListAdapter);
                                 authorListAdapter.setOnItemClickListener(new OnClick() {
                                     @Override
                                     public void position(int position) {
+                                        String bookId = relatedLists.get(position).getPost_id();
+                                        String pageNum = null;
+                                        ArrayList<SubCatListBook> favorites = method.getFavorites(AuthorDetailsActivity.this);
+                                        if (favorites != null) {
+                                            for (SubCatListBook s : favorites) {
+                                                if (s.getPost_id().equals(bookId)) {
+                                                    Log.w("adslog", "load favorites.indexOf(s)  " + favorites.indexOf(s));
+                                                    int i = favorites.indexOf(s);
+                                                    pageNum = favorites.get(i).getPage_num();
+                                                }
+                                            }
+                                        }
                                         Intent intentDetail = new Intent(AuthorDetailsActivity.this, BookDetailsActivity.class);
-                                        intentDetail.putExtra("BOOK_ID", relatedLists.get(position).getPost_id());
+                                        intentDetail.putExtra("BOOK_ID", bookId);
+                                        intentDetail.putExtra("LAST_POS", "continuePos");
+                                        intentDetail.putExtra("PAGE_NUM", pageNum);
                                         startActivity(intentDetail);
                                     }
                                 });
                             } else {
-                                viewAuthorDetail.llNoDataAuthor.clNoDataFound.setVisibility(View.VISIBLE);
-                                viewAuthorDetail.llNoDataAuthor.textViewNoDataNoDataFound.setText(getString(R.string.msg_no_author_book));
+                                viewAuthorDetail.rlRelatedSection.setVisibility(View.GONE);
+                                viewAuthorDetail.rvRelatedBook.setVisibility(View.GONE);
+                                viewAuthorDetail.llNoData.clNoDataFound.setVisibility(View.VISIBLE);
+                                viewAuthorDetail.llNoData.textViewNoDataNoDataFound.setText(getString(R.string.msg_no_author_book));
                             }
 
                         } else {

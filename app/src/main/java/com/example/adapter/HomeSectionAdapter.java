@@ -3,6 +3,7 @@ package com.example.adapter;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -16,25 +17,30 @@ import com.example.androidebookapps.HomeSectionListActivity;
 import com.example.androidebookapps.SubCategoryActivity;
 import com.example.androidebookapps.databinding.RowHomeSectionBinding;
 import com.example.item.HomeSection;
+import com.example.item.SubCatListBook;
+import com.example.util.Method;
 import com.example.util.OnClick;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class HomeSectionAdapter extends RecyclerView.Adapter<HomeSectionAdapter.ViewHolder> {
 
     Activity activity;
     List<HomeSection> homeSections;
-
+    Method method;
     public HomeSectionAdapter(Activity activity, List<HomeSection> homeSections) {
         this.activity = activity;
         this.homeSections = homeSections;
+        method = new Method(activity);
     }
 
     @NotNull
     @Override
     public ViewHolder onCreateViewHolder(@NotNull ViewGroup parent, int viewType) {
+
         return new ViewHolder(RowHomeSectionBinding.inflate(activity.getLayoutInflater()));
     }
 
@@ -46,6 +52,7 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<HomeSectionAdapter.
         holder.rowHomeSecBinding.ivHomeMore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.i("adslog", "onClick: hsa 50");
                 Intent intentHome = new Intent(activity, HomeSectionListActivity.class);
                 intentHome.putExtra("ID", homeSectionPos.getHomeId());
                 intentHome.putExtra("TITLE", homeSectionPos.getHomeTitle());
@@ -63,10 +70,25 @@ public class HomeSectionAdapter extends RecyclerView.Adapter<HomeSectionAdapter.
         homeContentAdapter.setOnItemClickListener(new OnClick() {
             @Override
             public void position(int positionContent) {
+                Log.i("adslog", "position: 68 hsa"+homeSectionPos.getHomeType());
                 switch (homeSectionPos.getHomeType()) {
                     case "book":
+                        String bookId = homeSectionPos.getHomeContent().get(positionContent).getPostId();
+                        String pageNum = null;
+                        ArrayList<SubCatListBook> favorites = method.getFavorites(activity);
+                        if (favorites != null) {
+                            for (SubCatListBook s : favorites) {
+                                if (s.getPost_id().equals(bookId)) {
+                                    Log.w("adslog", "load favorites.indexOf(s)  " + favorites.indexOf(s));
+                                    int i = favorites.indexOf(s);
+                                    pageNum = favorites.get(i).getPage_num();
+                                }
+                            }
+                        }
                         Intent intentDetail = new Intent(activity, BookDetailsActivity.class);
-                        intentDetail.putExtra("BOOK_ID", homeSectionPos.getHomeContent().get(positionContent).getPostId());
+                        intentDetail.putExtra("BOOK_ID", bookId);
+                        intentDetail.putExtra("LAST_POS", "continuePos");
+                        intentDetail.putExtra("PAGE_NUM", pageNum);
                         activity.startActivity(intentDetail);
                         break;
                     case "author": {

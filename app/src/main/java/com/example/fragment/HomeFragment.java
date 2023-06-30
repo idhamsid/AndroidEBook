@@ -25,6 +25,7 @@ import com.example.androidebookapps.R;
 import com.example.androidebookapps.SettingsActivity;
 import com.example.androidebookapps.TrendingBookActivity;
 import com.example.androidebookapps.databinding.FragmentHomeBinding;
+import com.example.item.SubCatListBook;
 import com.example.response.HomeRP;
 import com.example.rest.ApiClient;
 import com.example.rest.ApiInterface;
@@ -36,6 +37,7 @@ import com.google.gson.JsonObject;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -130,7 +132,7 @@ public class HomeFragment extends Fragment {
                     Toast.makeText(requireActivity(), getString(R.string.search_msg), Toast.LENGTH_SHORT).show();
                 } else {
                     Intent intentSearch = new Intent(requireActivity(), BookListBySubCatActivity.class);
-                    intentSearch.putExtra("postSubCatName", viewHome.edtHomeSearch.getText().toString());
+                    intentSearch.putExtra("searchText", viewHome.edtHomeSearch.getText().toString());
                     intentSearch.putExtra("type", "SearchHome");
                     startActivity(intentSearch);
                     viewHome.edtHomeSearch.setText("");
@@ -163,7 +165,7 @@ public class HomeFragment extends Fragment {
 
                             HomeRP homeRP = response.body();
 
-                            if (homeRP !=null && homeRP.getSuccess() == 1) {
+                            if (homeRP != null && homeRP.getSuccess() == 1) {
 
                                 if (homeRP.getEbookApp().getFeaturedBooks().size() != 0) {
                                     Update = () -> {
@@ -181,6 +183,7 @@ public class HomeFragment extends Fragment {
                                     sliderAdapter.setOnItemClickListener(new OnClick() {
                                         @Override
                                         public void position(int position) {
+                                            Log.i("adslog", "position: 187 hf");
                                             Intent intentDetail = new Intent(requireActivity(), BookDetailsActivity.class);
                                             intentDetail.putExtra("BOOK_ID", homeRP.getEbookApp().getFeaturedBooks().get(position).getPostId());
                                             startActivity(intentDetail);
@@ -201,10 +204,9 @@ public class HomeFragment extends Fragment {
                                     viewHome.tvHomeFeature.setVisibility(View.GONE);
                                     viewHome.llFeature.setVisibility(View.GONE);
                                 }
-                                if(homeRP.getEbookApp().getHomeSections()!=null){
-                                    homeSectionAdapter = new HomeSectionAdapter(getActivity(), homeRP.getEbookApp().getHomeSections());
-                                    viewHome.rvHomeSec.setAdapter(homeSectionAdapter);
-                                }
+
+                                homeSectionAdapter = new HomeSectionAdapter(getActivity(), homeRP.getEbookApp().getHomeSections());
+                                viewHome.rvHomeSec.setAdapter(homeSectionAdapter);
 
                                 if (homeRP.getEbookApp().getContinue_reading().size() != 0) {
                                     continueHomeAdapter = new ContinueHomeAdapter(getActivity(), homeRP.getEbookApp().getContinue_reading());
@@ -212,6 +214,7 @@ public class HomeFragment extends Fragment {
                                     continueHomeAdapter.setOnItemClickListener(new OnClick() {
                                         @Override
                                         public void position(int position) {
+                                            Log.e("adslog", "position: " + position);
                                             Intent intentDetail = new Intent(requireActivity(), BookDetailsActivity.class);
                                             intentDetail.putExtra("BOOK_ID", homeRP.getEbookApp().getContinue_reading().get(position).getPostId());
                                             intentDetail.putExtra("LAST_POS", "continuePos");
@@ -239,8 +242,23 @@ public class HomeFragment extends Fragment {
                                     trendingHomeAdapter.setOnItemClickListener(new OnClick() {
                                         @Override
                                         public void position(int position) {
+                                            Log.e("adslog", "position: 245 hf");
+                                            String bookId = homeRP.getEbookApp().getTrending_books().get(position).getPostId();
+                                            String pageNum = null;
+                                            ArrayList<SubCatListBook> favorites = method.getFavorites(getContext());
+                                            if (favorites != null) {
+                                                for (SubCatListBook s : favorites) {
+                                                    if (s.getPost_id().equals(bookId)) {
+                                                        Log.w("adslog", "load favorites.indexOf(s)  " + favorites.indexOf(s));
+                                                        int i = favorites.indexOf(s);
+                                                        pageNum = favorites.get(i).getPage_num();
+                                                    }
+                                                }
+                                            }
                                             Intent intentDetail = new Intent(requireActivity(), BookDetailsActivity.class);
-                                            intentDetail.putExtra("BOOK_ID", homeRP.getEbookApp().getTrending_books().get(position).getPostId());
+                                            intentDetail.putExtra("BOOK_ID", bookId);
+                                            intentDetail.putExtra("LAST_POS", "continuePos");
+                                            intentDetail.putExtra("PAGE_NUM", pageNum);
                                             startActivity(intentDetail);
                                         }
                                     });
@@ -286,6 +304,6 @@ public class HomeFragment extends Fragment {
     }
 
     public void setOnItemClickListener(OnClick clickListener) {
-       onClickPos = clickListener;
+        onClickPos = clickListener;
     }
 }

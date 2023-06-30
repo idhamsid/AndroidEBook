@@ -17,6 +17,7 @@ import com.example.androidebookapps.databinding.ActivityBookDetailBinding;
 import com.example.fragment.ReportBookFragment;
 import com.example.fragment.WriteRateReviewFragment;
 import com.example.item.BookDetailList;
+import com.example.item.SubCatListBook;
 import com.example.response.BookDetailRP;
 import com.example.rest.ApiClient;
 import com.example.rest.ApiInterface;
@@ -31,6 +32,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -96,7 +99,6 @@ public class BookDetailsActivity extends AppCompatActivity {
         viewBookDetail.progressHome.setVisibility(View.GONE);
         viewBookDetail.llNoData.clNoDataFound.setVisibility(View.GONE);
         viewBookDetail.nsView.setVisibility(View.GONE);
-        viewBookDetail.btnBuyBook.setVisibility(View.GONE);
 
         viewBookDetail.rvRelatedBook.setHasFixedSize(true);
         viewBookDetail.rvRelatedBook.setLayoutManager(new LinearLayoutManager(BookDetailsActivity.this, LinearLayoutManager.HORIZONTAL, false));
@@ -113,7 +115,6 @@ public class BookDetailsActivity extends AppCompatActivity {
     }
 
     private void bookDetailData() {
-
         viewBookDetail.progressHome.setVisibility(View.VISIBLE);
 
         JsonObject jsObj = (JsonObject) new Gson().toJsonTree(new API(BookDetailsActivity.this));
@@ -125,14 +126,12 @@ public class BookDetailsActivity extends AppCompatActivity {
             @Override
             public void onResponse(@NotNull Call<BookDetailRP> call, @NotNull Response<BookDetailRP> response) {
                 try {
-
                     BookDetailRP bookDetailRP = response.body();
 
                     if (bookDetailRP !=null && bookDetailRP.getSuccess().equals("1")) {
 
                         if (bookDetailRP.getBookDetailLists().size() != 0) {
                             viewBookDetail.nsView.setVisibility(View.VISIBLE);
-                            viewBookDetail.btnBuyBook.setVisibility(View.VISIBLE);
                             bookDetailListPos = bookDetailRP.getBookDetailLists().get(0);
                             bookViewData(postBookId);
                             viewBookDetail.tvBookName.setText(bookDetailListPos.getPost_title());
@@ -224,8 +223,22 @@ public class BookDetailsActivity extends AppCompatActivity {
                                 relatedAdapter.setOnItemClickListener(new OnClick() {
                                     @Override
                                     public void position(int position) {
+                                        String bookId = bookDetailListPos.getListRelatedBook().get(position).getPost_id();
+                                        String pageNum = null;
+                                        ArrayList<SubCatListBook> favorites = method.getFavorites(BookDetailsActivity.this);
+                                        if (favorites != null) {
+                                            for (SubCatListBook s : favorites) {
+                                                if (s.getPost_id().equals(bookId)) {
+                                                    int i = favorites.indexOf(s);
+                                                    pageNum = favorites.get(i).getPage_num();
+                                                }
+                                            }
+                                        }
+
                                         Intent intentDetail = new Intent(BookDetailsActivity.this, BookDetailsActivity.class);
-                                        intentDetail.putExtra("BOOK_ID", bookDetailListPos.getListRelatedBook().get(position).getPost_id());
+                                        intentDetail.putExtra("BOOK_ID", bookId );
+                                        intentDetail.putExtra("LAST_POS", "continuePos");
+                                        intentDetail.putExtra("PAGE_NUM", pageNum);
                                         startActivity(intentDetail);
                                         finish();
                                     }
@@ -323,13 +336,13 @@ public class BookDetailsActivity extends AppCompatActivity {
                                                     method.download(bookDetailListPos.getPost_id(),
                                                             bookDetailListPos.getPost_title(),
                                                             bookDetailListPos.getPost_image(),
-                                                            bookDetailListPos.getListBookDetailAuthor().isEmpty()?"":bookDetailListPos.getListBookDetailAuthor().get(0).getAuthor_name(),
+                                                            bookDetailListPos.getListBookDetailAuthor().get(0).getAuthor_name(),
                                                             bookDetailListPos.getPost_file_url(), "epub");
                                                 } else {
                                                     method.download(bookDetailListPos.getPost_id(),
                                                             bookDetailListPos.getPost_title(),
                                                             bookDetailListPos.getPost_image(),
-                                                            bookDetailListPos.getListBookDetailAuthor().isEmpty()?"":bookDetailListPos.getListBookDetailAuthor().get(0).getAuthor_name(),
+                                                            bookDetailListPos.getListBookDetailAuthor().get(0).getAuthor_name(),
                                                             bookDetailListPos.getPost_file_url(), "pdf");
                                                 }
                                             }
@@ -385,8 +398,8 @@ public class BookDetailsActivity extends AppCompatActivity {
                     }
 
                 } catch (Exception e) {
-                    Log.d("exception_error", e.toString());
                     method.alertBox(getResources().getString(R.string.failed_try_again));
+                    viewBookDetail.progressHome.setVisibility(View.GONE);
                 }
                 viewBookDetail.progressHome.setVisibility(View.GONE);
             }
@@ -394,7 +407,6 @@ public class BookDetailsActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NotNull Call<BookDetailRP> call, @NotNull Throwable t) {
                 // Log error here since request failed
-                Log.e("fail", t.toString());
                 viewBookDetail.llNoData.clNoDataFound.setVisibility(View.VISIBLE);
                 viewBookDetail.progressHome.setVisibility(View.GONE);
                 method.alertBox(getResources().getString(R.string.failed_try_again));
@@ -432,7 +444,6 @@ public class BookDetailsActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NotNull Call<JsonObject> call, @NotNull Throwable t) {
                 // Log error here since request failed
-                Log.e("fail", t.toString());
             }
         });
     }
@@ -449,6 +460,16 @@ public class BookDetailsActivity extends AppCompatActivity {
     }
 
     private void openBook() {
+        ArrayList<SubCatListBook> favorites = method.getFavorites(BookDetailsActivity.this);
+        if (favorites != null) {
+            for (SubCatListBook s : favorites) {
+                if (s.getPost_id().equals(postBookId)) {
+                    int i = favorites.indexOf(s);
+                    pageNo = favorites.get(i).getPage_num();
+                }
+            }
+        }
+        // TODO load last page
         if (bookDetailListPos.getPost_file_url().contains(".epub")) {
             DownloadEpub downloadEpub = new DownloadEpub(BookDetailsActivity.this);
             downloadEpub.pathEpub(bookDetailListPos.getPost_file_url(), bookDetailListPos.getPost_id(), lastPosNum, pageNo);

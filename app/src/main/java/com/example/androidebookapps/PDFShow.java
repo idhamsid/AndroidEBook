@@ -105,7 +105,10 @@ public class PDFShow extends AppCompatActivity implements OnPageChangeListener, 
 
         if (type.equals("link")) {
             if (conPos.equals("continuePos")) {
-                pdfFile(uri, id, Integer.parseInt(pageNo));
+                if (pageNo != null)
+                    pdfFile(uri, id, Integer.parseInt(pageNo));
+                else
+                    pdfFile(uri, id, 0);
             } else {
                 pdfFile(uri, id, 0);
             }
@@ -273,22 +276,38 @@ public class PDFShow extends AppCompatActivity implements OnPageChangeListener, 
     }
 
     private void bookContinuePageData(String bookId, String userId, String pageNo) {
-        JsonObject jsObj = (JsonObject) new Gson().toJsonTree(new API(PDFShow.this));
-        jsObj.addProperty("user_id", userId);
-        jsObj.addProperty("post_id", bookId);
-        jsObj.addProperty("page_num", pageNo);
-        ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
-        retrofit2.Call<JsonObject> call = apiService.getBookContinueData(API.toBase64(jsObj.toString()));
-        call.enqueue(new retrofit2.Callback<JsonObject>() {
-            @Override
-            public void onResponse(@NotNull retrofit2.Call<JsonObject> call, @NotNull retrofit2.Response<JsonObject> response) {
-            }
+        //TODO Save last page
+        if (userId.isEmpty()) {
+            Log.i("adslog", "bookContinuePageData: user id null om");
+            Log.v("adslog", "bookContinuePageData: pageNo 287 ps " + pageNo);
+            Log.v("adslog", "bookContinuePageData: bookId " + bookId);
+            method.addFavorite(this, bookId, pageNo);
+            Log.i("adslog", "" +
+                    "bookContinuePageData: getfav " + method.getFavorites(this).size());
 
-            @Override
-            public void onFailure(@NotNull retrofit2.Call<JsonObject> call, @NotNull Throwable t) {
-                // Log error here since request failed
-                Log.e("fail", t.toString());
-            }
-        });
+        } else {
+            Log.v("adslog", "bookContinuePageData: pageNo 293 ps" + pageNo);
+            Log.v("adslog", "bookContinuePageData: userId " + userId);
+            Log.v("adslog", "bookContinuePageData: bookId " + bookId);
+            JsonObject jsObj = (JsonObject) new Gson().toJsonTree(new API(PDFShow.this));
+            jsObj.addProperty("user_id", userId);
+            jsObj.addProperty("post_id", bookId);
+            jsObj.addProperty("page_num", pageNo);
+            ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+            retrofit2.Call<JsonObject> call = apiService.getBookContinueData(API.toBase64(jsObj.toString()));
+            String json = new Gson().toJson(jsObj);
+            Log.i("adslog", "bookContinuePageData: json " + json);
+            call.enqueue(new retrofit2.Callback<JsonObject>() {
+                @Override
+                public void onResponse(@NotNull retrofit2.Call<JsonObject> call, @NotNull retrofit2.Response<JsonObject> response) {
+                }
+
+                @Override
+                public void onFailure(@NotNull retrofit2.Call<JsonObject> call, @NotNull Throwable t) {
+                    // Log error here since request failed
+                    Log.e("fail", t.toString());
+                }
+            });
+        }
     }
 }

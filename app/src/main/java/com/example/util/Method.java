@@ -84,7 +84,7 @@ public class Method {
 
 
     // This four methods are used for maintaining lastread.
-    public void saveFavorites(Context context, List<SubCatListBook> favorites) {
+    public static void saveFavorites(Context context, List<SubCatListBook> favorites) {
         SharedPreferences settings;
         SharedPreferences.Editor editor;
 
@@ -126,15 +126,32 @@ public class Method {
         saveFavorites(context, favorites);
     }
 
-    public void removeFavorite(Context context, SubCatListBook product) {
+    public static void removeFavorite(Context context, SubCatListBook product) {
         ArrayList<SubCatListBook> favorites = getFavorites(context);
         if (favorites != null) {
-            favorites.remove(product);
+                for(int i = 0 ; i < favorites.size() ; i++){
+                    Log.v("adslog", "removeFavorite: product.getPost_title() "+product.getPost_id());
+                    Log.v("adslog", "removeFavorite: favorites.get(i).getPost_title() "+favorites.get(i).getPost_id());
+
+                    if(product.getPost_id().equalsIgnoreCase(favorites.get(i).getPost_id())){
+                        Log.e("adslog", "removeFavorite: "+favorites.get(i).getPost_id());
+                        Log.i("adslog", "removeFavorite: pos "+i);
+                        favorites.remove(i);
+                    }
+                }
             saveFavorites(context, favorites);
         }
+
+//        if (favorites != null) {
+//            favorites.remove(product);
+//            saveFavorites(context, favorites);
+//        }
+
     }
 
-    public ArrayList<SubCatListBook> getFavorites(Context context) {
+
+
+    public static ArrayList<SubCatListBook> getFavorites(Context context) {
         SharedPreferences settings;
         List<SubCatListBook> favorites;
 

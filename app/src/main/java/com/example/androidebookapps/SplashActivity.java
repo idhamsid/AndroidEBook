@@ -156,7 +156,7 @@ public class SplashActivity extends AppCompatActivity {
                             String symbol = currency.getSymbol();
                             str_package = appDetailRP.getAppLists().get(0).getAppPackageName();
                             Constant.constantCurrency = symbol;
-
+                            Log.i("adslog", "onResponse: "+str_package);
                             if (str_package.equals(getPackageName())) {
                                 new Handler().postDelayed(() -> {
                                     if (!isCancelled) {

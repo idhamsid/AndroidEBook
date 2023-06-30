@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -57,7 +58,7 @@ public class ProfileFragment extends Fragment {
         setHasOptionsMenu(true);
         requireActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.app_bg_orange));
         viewProfile = FragmentProfileBinding.inflate(inflater, container, false);
-
+        Log.i("adslog", "onCreateView: profile fragment ");
         if (getActivity() != null) {
             method = new Method(requireActivity());
             childFragmentManager = getChildFragmentManager();
@@ -91,18 +92,27 @@ public class ProfileFragment extends Fragment {
                 viewProfile.llNoData.clNoDataFound.setVisibility(View.GONE);
                 userProfile();
             } else {
+                viewProfile.tvToolbarTitle.setVisibility(View.GONE);
                 viewProfile.llLogin.setVisibility(View.VISIBLE);
                 viewProfile.llProfile.setVisibility(View.GONE);
-                viewProfile.llProfile2.setVisibility(View.GONE);
                 viewProfile.tvEdtTitle.setVisibility(View.GONE);
                 viewProfile.progressProfile.setVisibility(View.GONE);
                 viewProfile.llNoData.clNoDataFound.setVisibility(View.GONE);
+                viewProfile.llProfile2.setVisibility(View.VISIBLE);
+
+                RelativeLayout.LayoutParams params= new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+                params.addRule(RelativeLayout.BELOW, R.id.llLogin);
+                viewProfile.llProfile2.setLayoutParams(params);
+
+
             }
 
             setupViewPager(viewProfile.vpTab);
             new TabLayoutMediator(viewProfile.tabLayout, viewProfile.vpTab, new TabLayoutMediator.TabConfigurationStrategy() {
                 @Override
                 public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
+
+                    if(method.getIsLogin()) {
                         if (position == 0) {
                             tab.setText(getString(R.string.tab_favorite));
                         } else if (position == 1) {
@@ -114,6 +124,12 @@ public class ProfileFragment extends Fragment {
                         } else if (position == 4) {
                             tab.setText(getString(R.string.tab_rent));
                         }
+                    }else {
+                        if (position == 0) {
+                            tab.setText(getString(R.string.tab_continue));
+                        }
+                    }
+
                 }
             }).attach();
 
@@ -133,11 +149,17 @@ public class ProfileFragment extends Fragment {
 
     private void setupViewPager(final ViewPager2 viewPager) {
         final ViewPagerAdapter adapter = new ViewPagerAdapter(requireActivity());
-        adapter.addFragment(new FavoriteFragment(), getString(R.string.tab_favorite));
-        adapter.addFragment(new DownloadFragment(), getString(R.string.tab_download));
-        adapter.addFragment(new ContinueFragment(), getString(R.string.tab_continue));
-        adapter.addFragment(new DashBoardFragment(), getString(R.string.tab_subs));
-        adapter.addFragment(new RentBookFragment(), getString(R.string.tab_rent));
+
+        if(method.getIsLogin()) {
+            adapter.addFragment(new FavoriteFragment(), getString(R.string.tab_favorite));
+            adapter.addFragment(new DownloadFragment(), getString(R.string.tab_download));
+            adapter.addFragment(new ContinueFragment(), getString(R.string.tab_continue));
+            adapter.addFragment(new DashBoardFragment(), getString(R.string.tab_subs));
+            adapter.addFragment(new RentBookFragment(), getString(R.string.tab_rent));
+        }else {
+            adapter.addFragment(new ContinueFragment(), getString(R.string.tab_continue));
+        }
+
         viewPager.setAdapter(adapter);
         if (isContinue) {
             viewPager.setCurrentItem(movePos,false);
@@ -238,8 +260,6 @@ public class ProfileFragment extends Fragment {
                 .placeholder(R.drawable.placeholder_portable)
                 .into(viewProfile.ivUser);
         viewProfile.tvProfileName.setText(profileUpdate.getName());
-        itemUser.setName(profileUpdate.getName());
-        itemUser.setPhone(profileUpdate.getPhone());
 
     }
 }

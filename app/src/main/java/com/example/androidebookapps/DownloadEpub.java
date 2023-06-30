@@ -107,7 +107,7 @@ public class DownloadEpub {
                 call.enqueue(new Callback() {
                     @Override
                     public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                        Log.e("TAG", "=============onFailure===============");
+                        Log.e("adslogx", "=============onFailure===============");
                         e.printStackTrace();
                         Log.d("error_downloading", e.toString());
                         dialog.dismiss();
@@ -115,9 +115,9 @@ public class DownloadEpub {
 
                     @Override
                     public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                        Log.e("TAG", "=============onResponse===============");
-                        Log.e("TAG", "request headers:" + response.request().headers());
-                        Log.e("TAG", "response headers:" + response.headers());
+                        Log.e("adslogx", "=============onResponse===============");
+                        Log.e("adslogx", "request headers:" + response.request().headers());
+                        Log.e("adslogx", "response headers:" + response.headers());
                         assert response.body() != null;
                         ResponseBody responseBody = ProgressHelper.withProgress(response.body(), new ProgressUIListener() {
 
@@ -125,24 +125,24 @@ public class DownloadEpub {
                             @Override
                             public void onUIProgressStart(long totalBytes) {
                                 super.onUIProgressStart(totalBytes);
-                                Log.e("TAG", "onUIProgressStart:" + totalBytes);
+                                Log.e("adslogx", "onUIProgressStart:" + totalBytes);
                             }
 
                             @Override
                             public void onUIProgressChanged(long numBytes, long totalBytes, float percent, float speed) {
-                                Log.e("TAG", "=============start===============");
-                                Log.e("TAG", "numBytes:" + numBytes);
-                                Log.e("TAG", "totalBytes:" + totalBytes);
-                                Log.e("TAG", "percent:" + percent);
-                                Log.e("TAG", "speed:" + speed);
-                                Log.e("TAG", "============= end ===============");
+                                Log.e("adslogx", "=============start===============");
+                                Log.e("adslogx", "numBytes:" + numBytes);
+                                Log.e("adslogx", "totalBytes:" + totalBytes);
+                                Log.e("adslogx", "percent:" + percent);
+                                Log.e("adslogx", "speed:" + speed);
+                                Log.e("adslogx", "============= end ===============");
                             }
 
                             //if you don't need this method, don't override this methd. It isn't an abstract method, just an empty method.
                             @Override
                             public void onUIProgressFinish() {
                                 super.onUIProgressFinish();
-                                Log.e("TAG", "onUIProgressFinish:");
+                                Log.e("adslogx", "onUIProgressFinish:");
                                 dialog.dismiss();
                                 openBook(fileOpen.toString(), bookId);
                             }
@@ -181,7 +181,7 @@ public class DownloadEpub {
 
         if (posType.equals("continuePos")){
             ReadLocator readPosition = ReadLocator.fromJson(pageNum);
-        folioReader.setReadLocator(readPosition);
+            folioReader.setReadLocator(readPosition);
         }
 
         folioReader.openBook(path);
@@ -193,24 +193,36 @@ public class DownloadEpub {
     }
 
     private void bookContinuePageData(String bookId,String userId,String pageNo) {
-        JsonObject jsObj = (JsonObject) new Gson().toJsonTree(new API(activity));
-        jsObj.addProperty("user_id", userId);
-        jsObj.addProperty("post_id", bookId);
-        jsObj.addProperty("page_num", pageNo);
-        ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
-        retrofit2.Call<JsonObject> call = apiService.getBookContinueData(API.toBase64(jsObj.toString()));
-        Log.e("ebpun",""+API.toBase64(jsObj.toString()));
-        call.enqueue(new retrofit2.Callback<JsonObject>() {
-            @Override
-            public void onResponse(@NotNull retrofit2.Call<JsonObject> call, @NotNull retrofit2.Response<JsonObject> response) {
-            }
+        if (userId.isEmpty()) {
+            Log.i("adslog", "bookContinuePageData: user id null om");
+            Log.v("adslog", "bookContinuePageData: pageNo 198 depub" + pageNo);
+            Log.v("adslog", "bookContinuePageData: bookId " + bookId);
+            method.addFavorite(activity,bookId,pageNo);
+            Log.w("adslog", "bookContinuePageData: getfav "+method.getFavorites(activity).size());
 
-            @Override
-            public void onFailure(@NotNull retrofit2.Call<JsonObject> call, @NotNull Throwable t) {
-                // Log error here since request failed
-                Log.e("fail", t.toString());
-            }
-        });
+        } else {
+
+            JsonObject jsObj = (JsonObject) new Gson().toJsonTree(new API(activity));
+            jsObj.addProperty("user_id", userId);
+            jsObj.addProperty("post_id", bookId);
+            jsObj.addProperty("page_num", pageNo);
+            ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+            retrofit2.Call<JsonObject> call = apiService.getBookContinueData(API.toBase64(jsObj.toString()));
+            Log.e("adslogx", "" + API.toBase64(jsObj.toString()));
+            call.enqueue(new retrofit2.Callback<JsonObject>() {
+                @Override
+                public void onResponse(@NotNull retrofit2.Call<JsonObject> call, @NotNull retrofit2.Response<JsonObject> response) {
+                }
+
+                @Override
+                public void onFailure(@NotNull retrofit2.Call<JsonObject> call, @NotNull Throwable t) {
+                    // Log error here since request failed
+                    Log.e("fail", t.toString());
+                }
+            });
+
+        }
+
     }
 
 }

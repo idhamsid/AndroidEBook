@@ -172,6 +172,11 @@
         <item name="cornerSizeTopRight">@dimen/_12px</item>
     </style>
 
+    <style name="CornerRadiusImageDeletes" parent="">
+        <item name="cornerSizeBottomLeft">@dimen/_12px</item>
+        <item name="cornerSizeTopRight">@dimen/_12px</item>
+    </style>
+
     <style name="RemoveAppSplashTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:windowIsTranslucent">true</item>
     </style>

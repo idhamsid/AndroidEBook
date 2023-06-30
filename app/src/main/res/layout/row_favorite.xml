@@ -40,6 +40,25 @@
                     android:src="@drawable/img_fav_hover_profile" />
             </com.google.android.material.card.MaterialCardView>
 
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/mcvDelete"
+                android:layout_width="@dimen/_30px"
+                android:layout_height="@dimen/_30px"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/app_bg_orange"
+                app:shapeAppearanceOverlay="@style/CornerRadiusImageDeletes">
+
+                <ImageView
+                    android:id="@+id/ivDelete"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/app_name"
+                    android:src="@drawable/trash" />
+            </com.google.android.material.card.MaterialCardView>
+
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/ivHomeCont"
                 android:layout_width="match_parent"

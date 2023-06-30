@@ -70,6 +70,7 @@ public class BookGridFragment extends Fragment {
 
 
         if (strType.equals("TREND")) {
+            Log.w("adslog", "onCreateView: trend");
             viewBook.rvCat.setHasFixedSize(true);
             GridLayoutManager layoutManager = new GridLayoutManager(requireActivity(), 2);
             viewBook.rvCat.setLayoutManager(layoutManager);
@@ -85,6 +86,7 @@ public class BookGridFragment extends Fragment {
             });
             bookGridByTrend();
         } else if (strType.equals("LATEST")) {
+            Log.w("adslog", "onCreateView: LATEST");
             viewBook.rvCat.setHasFixedSize(true);
             GridLayoutManager layoutManager = new GridLayoutManager(requireActivity(), 2);
             viewBook.rvCat.setLayoutManager(layoutManager);
@@ -99,7 +101,9 @@ public class BookGridFragment extends Fragment {
                 }
             });
             bookGridByTrend();
+//            bookListGridBySubCategoryData();
         } else {
+            Log.w("adslog", "onCreateView: else");
             viewBook.rvCat.setHasFixedSize(true);
             GridLayoutManager layoutManager = new GridLayoutManager(requireActivity(), 2);
             viewBook.rvCat.setLayoutManager(layoutManager);
@@ -216,8 +220,22 @@ public class BookGridFragment extends Fragment {
                                     bookGridAdapter.setOnItemClickListener(new OnClick() {
                                         @Override
                                         public void position(int position) {
+                                            String bookId = listBooks.get(position).getPost_id();
+                                            String pageNum = null;
+                                            ArrayList<SubCatListBook> favorites = method.getFavorites(requireActivity());
+                                            if (favorites != null) {
+                                                for (SubCatListBook s : favorites) {
+                                                    if (s.getPost_id().equals(bookId)) {
+                                                        Log.w("adslog", "load favorites.indexOf(s)  " + favorites.indexOf(s));
+                                                        int i = favorites.indexOf(s);
+                                                        pageNum = favorites.get(i).getPage_num();
+                                                    }
+                                                }
+                                            }
                                             Intent intentDetail = new Intent(requireActivity(), BookDetailsActivity.class);
-                                            intentDetail.putExtra("BOOK_ID", listBooks.get(position).getPost_id());
+                                            intentDetail.putExtra("BOOK_ID", bookId);
+                                            intentDetail.putExtra("LAST_POS", "continuePos");
+                                            intentDetail.putExtra("PAGE_NUM", pageNum);
                                             startActivity(intentDetail);
                                         }
                                     });
@@ -299,8 +317,22 @@ public class BookGridFragment extends Fragment {
                                     latestBookGridAdapter.setOnItemClickListener(new OnClick() {
                                         @Override
                                         public void position(int position) {
+                                            String bookId = listBooks.get(position).getPost_id();
+                                            String pageNum = null;
+                                            ArrayList<SubCatListBook> favorites = method.getFavorites(requireActivity());
+                                            if (favorites != null) {
+                                                for (SubCatListBook s : favorites) {
+                                                    if (s.getPost_id().equals(bookId)) {
+                                                        Log.w("adslog", "load favorites.indexOf(s)  " + favorites.indexOf(s));
+                                                        int i = favorites.indexOf(s);
+                                                        pageNum = favorites.get(i).getPage_num();
+                                                    }
+                                                }
+                                            }
                                             Intent intentDetail = new Intent(requireActivity(), BookDetailsActivity.class);
-                                            intentDetail.putExtra("BOOK_ID", listBooks.get(position).getPost_id());
+                                            intentDetail.putExtra("BOOK_ID", bookId);
+                                            intentDetail.putExtra("LAST_POS", "continuePos");
+                                            intentDetail.putExtra("PAGE_NUM", pageNum);
                                             startActivity(intentDetail);
                                         }
                                     });
