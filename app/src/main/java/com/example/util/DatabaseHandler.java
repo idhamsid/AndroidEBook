@@ -34,6 +34,18 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_BOOK_AUTHOR_NAME = "book_author_name";
 
 
+    //book epub Table Columns name
+    private static final String KEY_EPUB_BOOK_ID = "id";
+    private static final String KEY_EPUB_BOOK_LAST_READ_POSITION = "last_read_position";
+
+    //book pdf Table Columns name
+    private static final String KEY_PDF_BOOK_ID = "id";
+    private static final String KEY_PDF_BOOK_LAST_READ_POSITION = "pdf_last_read_position";
+    // book epub read position table name
+    private static final String TABLE_NAME_EPUB = "epub";
+
+    // book pdf read position table name
+    private static final String TABLE_NAME_PDF = "pdf";
     public DatabaseHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -49,12 +61,25 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_DOWNLOAD);
 
 
+        String CREATE_TABLE_EPUB = "CREATE TABLE " + TABLE_NAME_EPUB + "("
+                + ID + " INTEGER PRIMARY KEY AUTOINCREMENT ," + KEY_EPUB_BOOK_ID + " TEXT,"
+                + KEY_EPUB_BOOK_LAST_READ_POSITION + " TEXT"
+                + ")";
+        db.execSQL(CREATE_TABLE_EPUB);
+
+        String CREATE_TABLE_PDF = "CREATE TABLE " + TABLE_NAME_PDF + "("
+                + ID + " INTEGER PRIMARY KEY AUTOINCREMENT ," + KEY_PDF_BOOK_ID + " TEXT,"
+                + KEY_PDF_BOOK_LAST_READ_POSITION + " INT"
+                + ")";
+        db.execSQL(CREATE_TABLE_PDF);
 
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME_DOWNLOAD);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME_EPUB);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME_PDF);
         onCreate(db);
     }
 
@@ -119,6 +144,103 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     }
 
     //-------------Download Table-------------------//
+
+
+
+    //-------------Download Table-------------------//
+
+    //-------------EPUB Table-------------------//
+
+    // Adding new epub detail
+    public void addEpub(String id, String lastReadPosition) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_EPUB_BOOK_ID, id);
+        values.put(KEY_EPUB_BOOK_LAST_READ_POSITION, lastReadPosition);
+
+        // Inserting Row
+        db.insert(TABLE_NAME_EPUB, null, values);
+        db.close(); // Closing database connection
+    }
+
+    // Getting epub
+    public String getEpub(String id) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        @SuppressLint("Recycle") Cursor cursor = db.query(TABLE_NAME_EPUB, new String[]{KEY_EPUB_BOOK_ID,
+                        KEY_EPUB_BOOK_LAST_READ_POSITION}, KEY_EPUB_BOOK_ID + "=?", new String[]{String.valueOf(id)},
+                null, null, null, null);
+        cursor.moveToFirst();
+        return cursor.getString(cursor.getColumnIndex(KEY_EPUB_BOOK_LAST_READ_POSITION));
+
+    }
+
+    // Updating epub in database
+    public void updateEpub(String id, String lastReadPosition) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_EPUB_BOOK_LAST_READ_POSITION, lastReadPosition);
+        // updating row
+        db.update(TABLE_NAME_EPUB, values, KEY_EPUB_BOOK_ID + "=" + id, null);
+    }
+
+    //check epub id in database or not
+    public boolean checkIdEpub(String id) {
+        String selectQuery = "SELECT  * FROM " + TABLE_NAME_EPUB + " WHERE " + KEY_EPUB_BOOK_ID + "=" + id;
+        SQLiteDatabase db = this.getWritableDatabase();
+        @SuppressLint("Recycle") Cursor cursor = db.rawQuery(selectQuery, null);
+        return cursor.getCount() == 0;
+    }
+
+    //-------------EPUB Table-------------------//
+
+
+    //-------------PDF Table-------------------//
+
+    // Adding new pdf detail
+    public void addPdf(String id, int lastReadPosition) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_PDF_BOOK_ID, id);
+        values.put(KEY_PDF_BOOK_LAST_READ_POSITION, lastReadPosition);
+
+        // Inserting Row
+        db.insert(TABLE_NAME_PDF, null, values);
+        db.close(); // Closing database connection
+    }
+
+    // Getting pdf
+    public int getPdf(String id) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        @SuppressLint("Recycle") Cursor cursor = db.query(TABLE_NAME_PDF, new String[]{KEY_PDF_BOOK_ID,
+                        KEY_PDF_BOOK_LAST_READ_POSITION}, KEY_PDF_BOOK_ID + "=?", new String[]{String.valueOf(id)},
+                null, null, null, null);
+        cursor.moveToFirst();
+        return cursor.getInt(cursor.getColumnIndex(KEY_PDF_BOOK_LAST_READ_POSITION));
+
+    }
+
+    // Updating pdf in database
+    public void updatePdf(String id, int lastReadPosition) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_PDF_BOOK_LAST_READ_POSITION, lastReadPosition);
+        // updating row
+        db.update(TABLE_NAME_PDF, values, KEY_PDF_BOOK_ID + "=" + id, null);
+    }
+
+    //check pdf id in database or not
+    public boolean checkIdPdfBook(String id) {
+        String selectQuery = "SELECT  * FROM " + TABLE_NAME_PDF + " WHERE " + KEY_PDF_BOOK_ID + "=" + id;
+        SQLiteDatabase db = this.getWritableDatabase();
+        @SuppressLint("Recycle") Cursor cursor = db.rawQuery(selectQuery, null);
+        return cursor.getCount() == 0;
+    }
+
+    //-------------PDF Table-------------------//
 
 
 }

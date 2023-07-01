@@ -143,6 +143,10 @@ public interface ApiInterface {
     @FormUrlEncoded
     Call<JsonObject> getBookContinueData(@Field("data") String data);
 
+    @POST("delete_continue_read")
+    @FormUrlEncoded
+    Call<JsonObject> delBookContinueData(@Field("data") String data);
+
     //get  profile
     @POST("profile")
     @FormUrlEncoded

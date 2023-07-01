@@ -13,6 +13,7 @@ import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
 import android.view.Display;
@@ -20,8 +21,14 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
+import com.applovin.mediation.MaxAd;
+import com.applovin.mediation.MaxAdListener;
+import com.applovin.mediation.MaxError;
+import com.applovin.mediation.ads.MaxInterstitialAd;
 import com.example.androidebookapps.BookDetailsActivity;
 import com.example.androidebookapps.R;
 import com.example.item.DownloadList;
@@ -30,9 +37,24 @@ import com.example.response.FavoriteRP;
 import com.example.rest.ApiClient;
 import com.example.rest.ApiInterface;
 import com.example.service.DownloadService;
+import com.facebook.ads.Ad;
+import com.facebook.ads.AdError;
+import com.facebook.ads.CacheFlag;
+import com.facebook.ads.InterstitialAdListener;
+import com.google.ads.mediation.admob.AdMobAdapter;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.startapp.sdk.adsbase.StartAppAd;
+import com.startapp.sdk.adsbase.adlisteners.AdDisplayListener;
+import com.startapp.sdk.adsbase.adlisteners.AdEventListener;
+import com.unity3d.ads.IUnityAdsShowListener;
+import com.unity3d.ads.UnityAds;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -61,11 +83,12 @@ public class Method {
     private final String myPreference = "login";
     public String IS_WELCOME = "is_welcome";
     String filename;
-    public static boolean isDownload = true;
+    public static boolean isDownload = true,personalizationAd = false;
     public String themSetting = "them";
     public String notification = "notification";
     public static final String LASTVIEW = "WebList_LastView";
     public static final String PREFS_NAME = "BOOK_LASTVIEW";
+    private OnClicks onClicks;
     @SuppressLint("CommitPrefEdits")
     public Method(Activity activity) {
         this.activity = activity;
@@ -82,6 +105,13 @@ public class Method {
 
 
 
+    @SuppressLint("CommitPrefEdits")
+    public Method(Activity activity, OnClicks onClicks) {
+        this.activity = activity;
+        this.onClicks = onClicks;
+        pref = activity.getSharedPreferences(myPreference, 0); // 0 - for private mode
+        editor = pref.edit();
+    }
 
     // This four methods are used for maintaining lastread.
     public static void saveFavorites(Context context, List<SubCatListBook> favorites) {
@@ -584,5 +614,290 @@ public class Method {
         });
 
     }
+
+
+    //---------------Interstitial Ad---------------//
+
+    public void onClickAd(final int position, final String type, final String id, final String subId,
+                          final String title, final String fileType, final String fileUrl, String otherData) {
+
+        ProgressDialog progressDialog = new ProgressDialog(activity);
+        progressDialog.show();
+        progressDialog.setMessage(activity.getResources().getString(R.string.loading));
+        progressDialog.setCancelable(false);
+
+        if (Constant.adsInfo != null) {
+
+            if (Constant.isInterstitial) {
+
+                Constant.AD_COUNT = Constant.AD_COUNT + 1;
+                if (Constant.AD_COUNT == Constant.AD_COUNT_SHOW) {
+                    Constant.AD_COUNT = 0;
+
+                    switch (Constant.adNetworkType) {
+                        case "admob":
+
+                            AdRequest adRequest;
+                            if (personalizationAd) {
+                                adRequest = new AdRequest.Builder()
+                                        .build();
+                            } else {
+                                Bundle extras = new Bundle();
+                                extras.putString("npa", "1");
+                                adRequest = new AdRequest.Builder()
+                                        .addNetworkExtrasBundle(AdMobAdapter.class, extras)
+                                        .build();
+                            }
+
+                            InterstitialAd.load(activity, Constant.adsInfo.getInterstitialId(), adRequest, new InterstitialAdLoadCallback() {
+                                @Override
+                                public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                                    // The mInterstitialAd reference will be null until
+                                    // an ad is loaded.
+                                    Log.i("admob_error", "onAdLoaded");
+                                    progressDialog.dismiss();
+                                    interstitialAd.show(activity);
+                                    interstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+                                        @Override
+                                        public void onAdDismissedFullScreenContent() {
+                                            // Called when fullscreen content is dismissed.
+                                            Log.e("TAG", "The ad was dismissed.");
+                                            onClicks.position(position, type, id, subId, title, fileType, fileUrl, otherData);
+                                        }
+
+                                        @Override
+                                        public void onAdFailedToShowFullScreenContent(com.google.android.gms.ads.AdError adError) {
+                                            // Called when fullscreen content failed to show.
+                                            Log.e("TAG", "The ad failed to show.");
+                                            onClicks.position(position, type, id, subId, title, fileType, fileUrl, otherData);
+                                        }
+
+                                        @Override
+                                        public void onAdShowedFullScreenContent() {
+                                            // Called when fullscreen content is shown.
+                                            // Make sure to set your reference to null so you don't
+                                            // show it a second time.
+                                            Log.e("TAG", "The ad was shown.");
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                                    // Handle the error
+                                    Log.i("admob_error", loadAdError.getMessage());
+                                    progressDialog.dismiss();
+                                    onClicks.position(position, type, id, subId, title, fileType, fileUrl, otherData);
+                                }
+                            });
+
+                            break;
+                        case "facebook":
+
+                            com.facebook.ads.InterstitialAd interstitialAd = new com.facebook.ads.InterstitialAd(activity, Constant.adsInfo.getInterstitialId());
+                            InterstitialAdListener interstitialAdListener = new InterstitialAdListener() {
+                                @Override
+                                public void onInterstitialDisplayed(Ad ad) {
+                                    // Interstitial ad displayed callback
+                                    Log.e("fb_ad", "Interstitial ad displayed.");
+                                }
+
+                                @Override
+                                public void onInterstitialDismissed(Ad ad) {
+                                    // Interstitial dismissed callback
+                                    progressDialog.dismiss();
+                                    onClicks.position(position, type, id, subId, title, fileType, fileUrl, otherData);
+                                    Log.e("fb_ad", "Interstitial ad dismissed.");
+                                }
+
+                                @Override
+                                public void onError(Ad ad, AdError adError) {
+                                    // Ad error callback
+                                    progressDialog.dismiss();
+                                    onClicks.position(position, type, id, subId, title, fileType, fileUrl, otherData);
+                                    Log.e("fb_ad", "Interstitial ad failed to load: " + adError.getErrorMessage());
+                                }
+
+                                @Override
+                                public void onAdLoaded(Ad ad) {
+                                    // Interstitial ad is loaded and ready to be displayed
+                                    Log.d("fb_ad", "Interstitial ad is loaded and ready to be displayed!");
+                                    progressDialog.dismiss();
+                                    // Show the ad
+                                    interstitialAd.show();
+                                }
+
+                                @Override
+                                public void onAdClicked(Ad ad) {
+                                    // Ad clicked callback
+                                    Log.d("fb_ad", "Interstitial ad clicked!");
+                                }
+
+                                @Override
+                                public void onLoggingImpression(Ad ad) {
+                                    // Ad impression logged callback
+                                    Log.d("fb_ad", "Interstitial ad impression logged!");
+                                }
+                            };
+
+                            // For auto play video ads, it's recommended to load the ad
+                            // at least 30 seconds before it is shown
+                            com.facebook.ads.InterstitialAd.InterstitialLoadAdConfig loadAdConfig = interstitialAd.buildLoadAdConfig().
+                                    withAdListener(interstitialAdListener).withCacheFlags(CacheFlag.ALL).build();
+                            interstitialAd.loadAd(loadAdConfig);
+
+                            break;
+                        case "unityds":
+                            UnityAds.show((Activity) activity,Constant.adsInfo.getInterstitialId(), new IUnityAdsShowListener() {
+                                @Override
+                                public void onUnityAdsShowFailure(String s, UnityAds.UnityAdsShowError unityAdsShowError, String s1) {
+                                    progressDialog.dismiss();
+                                    onClicks.position(position, type, id, subId, title, fileType, fileUrl, otherData);
+                                }
+
+                                @Override
+                                public void onUnityAdsShowStart(String s) {
+                                }
+
+                                @Override
+                                public void onUnityAdsShowClick(String s) {
+                                }
+
+                                @Override
+                                public void onUnityAdsShowComplete(String s, UnityAds.UnityAdsShowCompletionState unityAdsShowCompletionState) {
+                                    progressDialog.dismiss();
+                                    onClicks.position(position, type, id, subId, title, fileType, fileUrl, otherData);
+                                }
+                            });
+                            break;
+                        case "startapp":
+                            StartAppAd startAppAd = new StartAppAd(activity);
+                            startAppAd.loadAd(new AdEventListener() {
+                                @Override
+                                public void onReceiveAd(@NonNull com.startapp.sdk.adsbase.Ad ad) {
+                                    progressDialog.dismiss();
+                                    startAppAd.showAd(new AdDisplayListener() {
+                                        @Override
+                                        public void adHidden(com.startapp.sdk.adsbase.Ad ad) {
+                                            progressDialog.dismiss();
+                                            onClicks.position(position, type, id, subId, title, fileType, fileUrl, otherData);
+                                        }
+
+                                        @Override
+                                        public void adDisplayed(com.startapp.sdk.adsbase.Ad ad) {
+
+                                        }
+
+                                        @Override
+                                        public void adClicked(com.startapp.sdk.adsbase.Ad ad) {
+                                            progressDialog.dismiss();
+                                        }
+
+                                        @Override
+                                        public void adNotDisplayed(com.startapp.sdk.adsbase.Ad ad) {
+                                            progressDialog.dismiss();
+                                            onClicks.position(position, type, id, subId, title, fileType, fileUrl, otherData);
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void onFailedToReceiveAd(@Nullable com.startapp.sdk.adsbase.Ad ad) {
+                                    progressDialog.dismiss();
+                                    onClicks.position(position, type, id, subId, title, fileType, fileUrl, otherData);
+                                }
+                            });
+                            break;
+                        case "applovins":
+                            MaxInterstitialAd maxInterstitialAd = new MaxInterstitialAd(Constant.adsInfo.getInterstitialId(), (Activity) activity);
+                            maxInterstitialAd.setListener(new MaxAdListener() {
+                                @Override
+                                public void onAdLoaded(MaxAd ad) {
+                                    progressDialog.dismiss();
+                                    maxInterstitialAd.showAd();
+                                }
+
+                                @Override
+                                public void onAdDisplayed(MaxAd ad) {
+                                }
+
+                                @Override
+                                public void onAdHidden(MaxAd ad) {
+                                    progressDialog.dismiss();
+                                    onClicks.position(position, type, id, subId, title, fileType, fileUrl, otherData);
+                                }
+
+                                @Override
+                                public void onAdClicked(MaxAd ad) {
+                                }
+
+                                @Override
+                                public void onAdLoadFailed(String adUnitId, MaxError error) {
+                                    progressDialog.dismiss();
+                                    onClicks.position(position, type, id, subId, title, fileType, fileUrl, otherData);
+                                }
+
+                                @Override
+                                public void onAdDisplayFailed(MaxAd ad, MaxError error) {
+                                    progressDialog.dismiss();
+                                    onClicks.position(position, type, id, subId, title, fileType, fileUrl, otherData);
+                                }
+                            });
+                            // Load the first ad
+                            maxInterstitialAd.loadAd();
+                            break;
+                        case "wortise":
+                            com.wortise.ads.interstitial.InterstitialAd wInterstitial = new com.wortise.ads.interstitial.InterstitialAd(activity, Constant.adsInfo.getInterstitialId());
+                            wInterstitial.setListener(new com.wortise.ads.interstitial.InterstitialAd.Listener() {
+                                @Override
+                                public void onInterstitialClicked(@NonNull com.wortise.ads.interstitial.InterstitialAd interstitialAd) {
+
+                                }
+                                @Override
+                                public void onInterstitialDismissed(@NonNull com.wortise.ads.interstitial.InterstitialAd interstitialAd) {
+                                    progressDialog.dismiss();
+                                    onClicks.position(position, type, id, subId, title, fileType, fileUrl, otherData);
+                                }
+                                @Override
+                                public void onInterstitialFailed(@NonNull com.wortise.ads.interstitial.InterstitialAd interstitialAd, @NonNull com.wortise.ads.AdError adError) {
+                                    progressDialog.dismiss();
+                                    onClicks.position(position, type, id, subId, title, fileType, fileUrl, otherData);
+                                }
+                                @Override
+                                public void onInterstitialLoaded(@NonNull com.wortise.ads.interstitial.InterstitialAd interstitialAd) {
+                                    if (wInterstitial.isAvailable()) {
+                                        wInterstitial.showAd();
+                                    }
+                                }
+                                @Override
+                                public void onInterstitialShown(@NonNull com.wortise.ads.interstitial.InterstitialAd interstitialAd) {
+                                    progressDialog.dismiss();
+                                }
+                            });
+                            wInterstitial.loadAd();
+                            break;
+                    }
+
+                } else {
+                    progressDialog.dismiss();
+                    onClicks.position(position, type, id, subId, title, fileType, fileUrl, otherData);
+                }
+
+            } else {
+                progressDialog.dismiss();
+                onClicks.position(position, type, id, subId, title, fileType, fileUrl, otherData);
+            }
+        } else {
+            progressDialog.dismiss();
+            try {
+                onClicks.position(position, type, id, subId, title, fileType, fileUrl, otherData);
+            }catch (Exception e){
+                Log.i("adslogd", "onClickAd: exceptione "+e.getMessage());
+            }
+        }
+    }
+
+    //---------------Interstitial Ad---------------//
+
 
 }

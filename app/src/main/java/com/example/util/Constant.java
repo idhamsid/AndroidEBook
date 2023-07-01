@@ -28,7 +28,7 @@ public class Constant {
     public static boolean isInterstitial= false;
 
     public static AdsInfo adsInfo;
-
+    public static int AD_COUNT_SHOW = 0;
     public static int interstitialClick,nativePosition;
     public static String bannerId,interstitialId,nativeId,publisherId,
             adNetworkType;

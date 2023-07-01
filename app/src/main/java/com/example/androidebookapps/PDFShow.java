@@ -102,7 +102,7 @@ public class PDFShow extends AppCompatActivity implements OnPageChangeListener, 
 
         pdfView = findViewById(R.id.pdfView_activity);
         pdfView.setBackgroundColor(Color.LTGRAY);
-
+        Log.i("adslogf", "onCreate: conPos ps "+conPos);
         if (type.equals("link")) {
             if (conPos.equals("continuePos")) {
                 if (pageNo != null)
@@ -286,9 +286,9 @@ public class PDFShow extends AppCompatActivity implements OnPageChangeListener, 
                     "bookContinuePageData: getfav " + method.getFavorites(this).size());
 
         } else {
-            Log.v("adslog", "bookContinuePageData: pageNo 293 ps" + pageNo);
-            Log.v("adslog", "bookContinuePageData: userId " + userId);
-            Log.v("adslog", "bookContinuePageData: bookId " + bookId);
+            Log.v("adslogf", "bookContinuePageData: pageNo 293 ps " + pageNo);
+            Log.v("adslogf", "bookContinuePageData: userId " + userId);
+            Log.v("adslogf", "bookContinuePageData: bookId " + bookId);
             JsonObject jsObj = (JsonObject) new Gson().toJsonTree(new API(PDFShow.this));
             jsObj.addProperty("user_id", userId);
             jsObj.addProperty("post_id", bookId);
@@ -296,10 +296,10 @@ public class PDFShow extends AppCompatActivity implements OnPageChangeListener, 
             ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
             retrofit2.Call<JsonObject> call = apiService.getBookContinueData(API.toBase64(jsObj.toString()));
             String json = new Gson().toJson(jsObj);
-            Log.i("adslog", "bookContinuePageData: json " + json);
             call.enqueue(new retrofit2.Callback<JsonObject>() {
                 @Override
                 public void onResponse(@NotNull retrofit2.Call<JsonObject> call, @NotNull retrofit2.Response<JsonObject> response) {
+                    Log.i("adslog", "onResponse: "+response);
                 }
 
                 @Override

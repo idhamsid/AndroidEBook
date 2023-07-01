@@ -13,6 +13,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import com.example.rest.ApiClient;
 import com.example.rest.ApiInterface;
 import com.example.util.API;
+import com.example.util.DatabaseHandler;
 import com.example.util.Method;
 import com.folioreader.FolioReader;
 import com.folioreader.model.locators.ReadLocator;
@@ -50,6 +51,7 @@ public class DownloadEpub {
     public DownloadEpub(Activity activity) {
         this.activity = activity;
         method = new Method(activity);
+        db = new DatabaseHandler(activity);
     }
 
     public void pathEpub(String path, String bookId,String posType,String pageNum) {
@@ -191,7 +193,7 @@ public class DownloadEpub {
         });
 
     }
-
+    private DatabaseHandler db;
     private void bookContinuePageData(String bookId,String userId,String pageNo) {
         if (userId.isEmpty()) {
             Log.i("adslog", "bookContinuePageData: user id null om");
@@ -208,10 +210,16 @@ public class DownloadEpub {
             jsObj.addProperty("page_num", pageNo);
             ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
             retrofit2.Call<JsonObject> call = apiService.getBookContinueData(API.toBase64(jsObj.toString()));
-            Log.e("adslogx", "" + API.toBase64(jsObj.toString()));
+            Log.e("adslogx", "jsObj " + jsObj);
             call.enqueue(new retrofit2.Callback<JsonObject>() {
                 @Override
                 public void onResponse(@NotNull retrofit2.Call<JsonObject> call, @NotNull retrofit2.Response<JsonObject> response) {
+                    Log.i("adslogx", "onResponse: "+response);
+                    if (db.checkIdEpub(bookId)) {
+                        db.addEpub(bookId, pageNo);
+                    } else {
+                        db.updateEpub(bookId, pageNo);
+                    }
                 }
 
                 @Override

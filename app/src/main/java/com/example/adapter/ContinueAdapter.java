@@ -53,7 +53,7 @@ public class ContinueAdapter extends RecyclerView.Adapter<ContinueAdapter.ViewHo
 
     @SuppressLint({"SetTextI18n", "UseCompatLoadingForDrawables"})
     @Override
-    public void onBindViewHolder(@NotNull ViewHolder holder, final int position) {
+    public void onBindViewHolder(@NotNull ViewHolder holder, @SuppressLint("RecyclerView") final int position) {
 
         holder.rowFavoriteBinding.mcvFav.setVisibility(View.GONE);
         holder.rowFavoriteBinding.mcvDelete.setVisibility(View.VISIBLE);

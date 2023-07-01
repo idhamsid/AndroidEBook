@@ -16,8 +16,10 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 
+import com.braintreepayments.api.Json;
 import com.example.adapter.ContinueAdapter;
 import com.example.androidebookapps.BookDetailsActivity;
+import com.example.androidebookapps.PDFShow;
 import com.example.androidebookapps.R;
 import com.example.androidebookapps.databinding.FragmentFavoriteBinding;
 import com.example.androidebookapps.databinding.RowFavoriteBinding;
@@ -75,7 +77,48 @@ public class ContinueFragment extends Fragment{
         return viewContinue.getRoot();
     }
 
+    private void DeleteContinueRead(SubCatListBook book,int pos){
+        if((getActivity() != null)) {
+            JsonObject jsObj = (JsonObject) new Gson().toJsonTree(new API(requireActivity()));
+            jsObj.addProperty("user_id",  method.getUserId());
+            jsObj.addProperty("post_id", book.getPost_id());
+            ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+            retrofit2.Call<JsonObject> call = apiService.delBookContinueData(API.toBase64(jsObj.toString()));
+            String json = new Gson().toJson(jsObj);
+            Log.i("adslog", "DeleteContinueRead: json delete "+json);
+            call.enqueue(new retrofit2.Callback<JsonObject>(){
+                @Override
+                public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                    Log.i("adslog", "onResponse: "+response);
+                    final Animation animation = AnimationUtils.loadAnimation(getContext(),
+                            R.anim.slide_out);
+                    View v = Objects.requireNonNull(viewContinue.rvFav.findViewHolderForAdapterPosition(pos)).itemView;
+                    animation.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+                        }
 
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            favListBookList.remove(pos);
+                            continueAdapter.notifyDataSetChanged();
+                        }
+                    });
+                    v.startAnimation(animation);
+
+                }
+
+                @Override
+                public void onFailure(Call<JsonObject> call, Throwable t) {
+                    Log.i("adslog", "onFailure: "+t.getMessage());
+                }
+            });
+        }
+    }
     private void ContinueData() {
         if (getActivity() != null) {
             viewContinue.progressFav.setVisibility(View.VISIBLE);
@@ -102,7 +145,8 @@ public class ContinueFragment extends Fragment{
                                     continueAdapter = new ContinueAdapter(requireActivity(), favListBookRP.getSubCatListBooks(), new ContinueAdapter.SetOnClickListener() {
                                         @Override
                                         public void onDelete(View view , int pos) {
-                                            Log.i("adslog", "onDelete: "+pos);
+                                            SubCatListBook book = favListBookRP.getSubCatListBooks().get(pos);
+                                            DeleteContinueRead(book,pos);
                                         }
                                     });
                                     viewContinue.rvFav.setAdapter(continueAdapter);
@@ -174,7 +218,6 @@ public class ContinueFragment extends Fragment{
                     if (getActivity() != null) {
                         try {
                             SubCatListBookRP subCatListBookRP = response.body();
-
                             Log.i("adslog", "onResponse: subcatlist "+subCatListBookRP.getSubCatListBooks().size());
                             if (subCatListBookRP != null && subCatListBookRP.getSuccess().equals("1")) {
                                 if (subCatListBookRP.getSubCatListBooks().size() != 0) {
