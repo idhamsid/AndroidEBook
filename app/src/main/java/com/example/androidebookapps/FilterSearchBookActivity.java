@@ -3,6 +3,7 @@ package com.example.androidebookapps;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,6 +39,8 @@ public class FilterSearchBookActivity extends AppCompatActivity {
         strValue = intent.getStringExtra("searchValue");
         strFrom = intent.getStringExtra("isFrom");
 
+        Log.i("adslogau", "onCreate: strValue "+strValue);
+        Log.i("adslogau", "onCreate: strFrom "+strFrom);
         viewBookListSearch.toolbarMain.tvToolbarTitle.setText(getString(R.string.search_title));
         viewBookListSearch.toolbarMain.ivSearch.setVisibility(View.GONE);
         viewBookListSearch.toolbarMain.imageFilter.setVisibility(View.GONE);

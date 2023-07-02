@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Filter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -61,7 +62,8 @@ import java.util.Random;
 public class AuthorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     Activity activity;
-    List<AuthorList> authorLists;
+    public static List<AuthorList> authorLists;
+    public static List<AuthorList> mFilteredList;
     OnClick onClick;
     private final int VIEW_TYPE_LOADING = 0;
     private final int VIEW_TYPE_ITEM = 1;
@@ -70,9 +72,10 @@ public class AuthorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     AdLoader adLoader = null;
     List<com.google.android.gms.ads.nativead.NativeAd> mNativeAdsAdmob = new ArrayList<>();
 
-    public AuthorAdapter(Activity activity, List<AuthorList> authorLists) {
+    public AuthorAdapter(Activity activity, List<AuthorList> authorList) {
         this.activity = activity;
-        this.authorLists = authorLists;
+        authorLists = authorList;
+        mFilteredList = authorList;
         loadNativeAds();
     }
 
@@ -94,14 +97,15 @@ public class AuthorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, @SuppressLint("RecyclerView") final int position) {
         if (holder.getItemViewType() == VIEW_TYPE_ITEM) {
+            final AuthorList webList = mFilteredList.get(position);
             final ViewHolder viewHolder = (ViewHolder) holder;
-            if (!authorLists.get(position).getPost_image().equals("")) {
-                Glide.with(activity.getApplicationContext()).load(authorLists.get(position).getPost_image())
+            if (!webList.getPost_image().equals("")) {
+                Glide.with(activity.getApplicationContext()).load(webList.getPost_image())
                         .placeholder(R.drawable.placeholder_author)
                         .into(viewHolder.rowAuthorBinding.ivAuthor);
             }
 
-            viewHolder.rowAuthorBinding.tvAuthorName.setText(authorLists.get(position).getPost_title());
+            viewHolder.rowAuthorBinding.tvAuthorName.setText(webList.getPost_title());
 
             viewHolder.rowAuthorBinding.llAuthor.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -284,7 +288,7 @@ public class AuthorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     @Override
     public int getItemCount() {
-        return (null != authorLists ? authorLists.size() + 1 : 0);
+        return (null != mFilteredList ? mFilteredList.size() + 1 : 0);
     }
 
     public void hideHeader() {
@@ -292,14 +296,14 @@ public class AuthorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     private boolean isHeader(int position) {
-        return position == authorLists.size();
+        return position == mFilteredList.size();
     }
 
     @Override
     public int getItemViewType(int position) {
         if (isHeader(position)) {
             return VIEW_TYPE_LOADING;
-        } else if (authorLists.get(position) == null) {
+        } else if (mFilteredList.get(position) == null) {
             return VIEW_TYPE_Ad;
         } else {
             return VIEW_TYPE_ITEM;
@@ -360,7 +364,42 @@ public class AuthorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             }
         }
     }
+    public Filter getFilter() {
 
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence) {
+
+                String charString = charSequence.toString();
+
+                if (charString.isEmpty()) {
+                    mFilteredList = authorLists;
+                } else {
+
+                    ArrayList<AuthorList> filteredList = new ArrayList<>();
+
+                    for (AuthorList androidVersion : mFilteredList) {
+
+                        if (androidVersion.getPost_title().toLowerCase().contains(charString.toLowerCase() )) {
+                            filteredList.add(androidVersion);
+                        }
+                    }
+
+                    mFilteredList = filteredList;
+                }
+
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = mFilteredList;
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+                mFilteredList = (ArrayList<AuthorList>) filterResults.values;
+                notifyDataSetChanged();
+            }
+        };
+    }
     private void populateUnifiedNativeAdView(com.google.android.gms.ads.nativead.NativeAd nativeAd, NativeAdView adView) {
         adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
         adView.setBodyView(adView.findViewById(R.id.ad_body));

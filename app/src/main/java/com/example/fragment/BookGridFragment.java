@@ -68,6 +68,7 @@ public class BookGridFragment extends Fragment {
         viewBook.progressHome.setVisibility(View.GONE);
         viewBook.llNoData.clNoDataFound.setVisibility(View.GONE);
 
+        Log.i("adslogau", "onCreateView: strType "+strType);
 
         if (strType.equals("TREND")) {
             Log.w("adslog", "onCreateView: trend");
@@ -175,8 +176,11 @@ public class BookGridFragment extends Fragment {
                 jsObj.addProperty("filter_type", "author_by");
                 jsObj.addProperty("filter_val", strSubCatName);
                 jsObj.addProperty("user_id", method.getUserId());
+                Log.i("adslogau", "bookListGridBySubCategoryData: author by filter val "+strSubCatId);
+                Log.e("adslogau", "jsObj " + jsObj);
                 ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
                 call = apiService.getFilterSearchBookData(API.toBase64(jsObj.toString()), pageIndex);
+
             } else if ("CatFilter".equals(strType)) {
                 jsObj.addProperty("filter_type", "category_by");
                 jsObj.addProperty("filter_val", strSubCatName);
@@ -194,7 +198,7 @@ public class BookGridFragment extends Fragment {
                 public void onResponse(@NotNull Call<SubCatListBookRP> call, @NotNull Response<SubCatListBookRP> response) {
                     if (getActivity() != null) {
                         try {
-
+                            Log.i("adslog", "onResponse: "+response.body());
                             SubCatListBookRP subCatListBookRP = response.body();
 
                             if (subCatListBookRP != null && subCatListBookRP.getSuccess().equals("1")) {
@@ -259,7 +263,7 @@ public class BookGridFragment extends Fragment {
                             }
 
                         } catch (Exception e) {
-                            Log.d("exception_error", e.toString());
+                            Log.d("adslogau", e.toString());
                             method.alertBox(getString(R.string.failed_try_again));
                         }
                     }

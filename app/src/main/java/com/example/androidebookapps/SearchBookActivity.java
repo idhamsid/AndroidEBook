@@ -1,6 +1,7 @@
 package com.example.androidebookapps;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.View;
@@ -22,7 +23,7 @@ import com.example.util.StatusBar;
 public class SearchBookActivity extends AppCompatActivity {
 
     ActivitySearchBookBinding viewBookListSearch;
-    String strSearchText;
+    String strSearchText,strType;
     Method method;
     boolean isGridSelect = true;
     FragmentManager fragmentManager;
@@ -38,6 +39,12 @@ public class SearchBookActivity extends AppCompatActivity {
         method.forceRTLIfSupported();
         fragmentManager = getSupportFragmentManager();
 
+        Intent intent = getIntent();
+        strType = intent.getStringExtra("type");
+
+        if(strType == null ){
+            strType="Search";
+        }
         viewBookListSearch.edtSearch.requestFocus();
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.showSoftInput(viewBookListSearch.edtSearch, InputMethodManager.SHOW_IMPLICIT);
@@ -106,7 +113,7 @@ public class SearchBookActivity extends AppCompatActivity {
         Bundle bundle = new Bundle();
         bundle.putString("postSubCatId", strSearchText);
         bundle.putString("postSubCatName", strSearchText);
-        bundle.putString("type", "Search");
+        bundle.putString("type", strType);
         BookGridFragment bookGridFragment = new BookGridFragment();
         bookGridFragment.setArguments(bundle);
         getSupportFragmentManager().beginTransaction().add(R.id.frameMain, bookGridFragment, "")
@@ -117,7 +124,7 @@ public class SearchBookActivity extends AppCompatActivity {
         Bundle bundle = new Bundle();
         bundle.putString("postSubCatId", strSearchText);
         bundle.putString("postSubCatName", strSearchText);
-        bundle.putString("type", "Search");
+        bundle.putString("type", strType);
         BookListFragment bookListFragment = new BookListFragment();
         bookListFragment.setArguments(bundle);
         getSupportFragmentManager().beginTransaction().add(R.id.frameMain, bookListFragment, "")

@@ -3,6 +3,8 @@ package com.example.fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +16,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.example.adapter.AuthorAdapter;
 import com.example.androidebookapps.AuthorDetailsActivity;
+import com.example.androidebookapps.FilterActivity;
 import com.example.androidebookapps.R;
 import com.example.androidebookapps.SearchBookActivity;
 import com.example.androidebookapps.databinding.FragmentAuthorBinding;
@@ -64,8 +67,12 @@ public class AuthorFragment extends Fragment {
         viewAuthor.toolbarMain.ivSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intentSearch=new Intent(requireActivity(), SearchBookActivity.class);
-                startActivity(intentSearch);
+                viewAuthor.toolbarMain.searchLayout.setVisibility(View.VISIBLE);
+                viewAuthor.toolbarMain.tvToolbarTitle.setVisibility(View.GONE);
+                viewAuthor.toolbarMain.imageArrowBack.setVisibility(View.GONE);
+//                Intent intentSearch = new Intent(requireActivity(), SearchBookActivity.class);
+//                intentSearch.putExtra("type", "AuthorFilter");
+//                startActivity(intentSearch);
             }
         });
         viewAuthor.progressHome.setVisibility(View.GONE);
@@ -78,12 +85,40 @@ public class AuthorFragment extends Fragment {
         layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
-                if (authorAdapter.getItemViewType(position) != 1 ) {
+                if (authorAdapter.getItemViewType(position) != 1) {
                     return 3;
                 }
                 return 1;
             }
         });
+
+        viewAuthor.toolbarMain.edtAuthorSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().trim().length() == 0) {
+                    viewAuthor.toolbarMain.searchLayout.setVisibility(View.GONE);
+                    viewAuthor.toolbarMain.tvToolbarTitle.setVisibility(View.VISIBLE);
+                    viewAuthor.toolbarMain.imageArrowBack.setVisibility(View.VISIBLE);
+                    authorAdapter.getFilter().filter("");
+                } else {
+                    viewAuthor.toolbarMain.searchLayout.setVisibility(View.VISIBLE);
+                    viewAuthor.toolbarMain.tvToolbarTitle.setVisibility(View.GONE);
+                    viewAuthor.toolbarMain.imageArrowBack.setVisibility(View.GONE);
+                    authorAdapter.getFilter().filter(s);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
         if (method.isNetworkAvailable()) {
             authorData();
         } else {
@@ -114,11 +149,11 @@ public class AuthorFragment extends Fragment {
 
         if (getActivity() != null) {
             if (isFirst)
-            viewAuthor.progressHome.setVisibility(View.VISIBLE);
+                viewAuthor.progressHome.setVisibility(View.VISIBLE);
 
             JsonObject jsObj = (JsonObject) new Gson().toJsonTree(new API(getActivity()));
             ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
-            Call<AuthorRP> call = apiService.getAuthorData(API.toBase64(jsObj.toString()),pageIndex);
+            Call<AuthorRP> call = apiService.getAuthorData(API.toBase64(jsObj.toString()), pageIndex);
             call.enqueue(new Callback<AuthorRP>() {
                 @Override
                 public void onResponse(@NotNull Call<AuthorRP> call, @NotNull Response<AuthorRP> response) {
@@ -128,11 +163,11 @@ public class AuthorFragment extends Fragment {
                         try {
 
                             AuthorRP authorRP = response.body();
-                            if (authorRP !=null && authorRP.getSuccess().equals("1")) {
+                            if (authorRP != null && authorRP.getSuccess().equals("1")) {
                                 if (authorRP.getAuthorLists().size() != 0) {
                                     for (int i = 0; i < authorRP.getAuthorLists().size(); i++) {
                                         if (Constant.isNative) {
-                                            if (j %Constant.nativePosition== 0) {
+                                            if (j % Constant.nativePosition == 0) {
                                                 authorLists.add(null);
                                                 j++;
                                             }
@@ -144,14 +179,14 @@ public class AuthorFragment extends Fragment {
                                         isFirst = false;
                                         authorAdapter = new AuthorAdapter(getActivity(), authorLists);
                                         viewAuthor.rvCat.setAdapter(authorAdapter);
-                                    }else {
+                                    } else {
                                         authorAdapter.notifyDataSetChanged();
                                     }
                                     authorAdapter.setOnItemClickListener(new OnClick() {
                                         @Override
                                         public void position(int position) {
-                                            Intent intentSubCat=new Intent(requireActivity(), AuthorDetailsActivity.class);
-                                            intentSubCat.putExtra("AUTHOR_ID",authorLists.get(position).getPost_id());
+                                            Intent intentSubCat = new Intent(requireActivity(), AuthorDetailsActivity.class);
+                                            intentSubCat.putExtra("AUTHOR_ID", AuthorAdapter.mFilteredList.get(position).getPost_id());
                                             startActivity(intentSubCat);
                                         }
                                     });

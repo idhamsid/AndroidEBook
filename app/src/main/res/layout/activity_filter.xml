@@ -141,7 +141,7 @@
         android:layout_marginBottom="@dimen/_10px"
         android:background="@color/filter_bg"
         android:orientation="vertical"
-        android:visibility="gone">
+        android:visibility="visible">
 
         <TextView
             android:id="@+id/tvTitleAuthor"
@@ -150,9 +150,9 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center|start"
             android:layout_marginStart="@dimen/_10px"
+            android:layout_marginTop="@dimen/_10px"
             android:layout_marginEnd="@dimen/_10px"
             android:includeFontPadding="false"
-            android:layout_marginTop="@dimen/_10px"
             android:singleLine="true"
             android:text="@string/filter_author"
             android:textColor="@color/gray_2"
@@ -384,7 +384,8 @@
         android:layout_marginEnd="@dimen/_20px"
         android:layout_marginBottom="@dimen/_10px"
         android:background="@color/filter_bg"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        tools:visibility="gone">
 
         <TextView
             android:id="@+id/tvTitleSortBy"
@@ -393,8 +394,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center|start"
             android:layout_marginStart="@dimen/_10px"
-            android:layout_marginEnd="@dimen/_10px"
             android:layout_marginTop="@dimen/_10px"
+            android:layout_marginEnd="@dimen/_10px"
             android:includeFontPadding="false"
             android:singleLine="true"
             android:text="@string/filter_sort"
