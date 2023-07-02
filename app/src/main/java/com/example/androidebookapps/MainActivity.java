@@ -114,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
         });
         loadFrag(homeFragment, "", fragmentManager);
         viewMain.toolbarMain.toolbarToolbar.setVisibility(View.GONE);
+
         viewMain.bottomNav.frameHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

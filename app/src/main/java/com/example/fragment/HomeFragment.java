@@ -21,6 +21,7 @@ import com.example.adapter.SliderAdapter;
 import com.example.adapter.TrendingHomeAdapter;
 import com.example.androidebookapps.BookDetailsActivity;
 import com.example.androidebookapps.BookListBySubCatActivity;
+import com.example.androidebookapps.FilterActivity;
 import com.example.androidebookapps.R;
 import com.example.androidebookapps.SettingsActivity;
 import com.example.androidebookapps.TrendingBookActivity;
@@ -90,6 +91,14 @@ public class HomeFragment extends Fragment {
         viewHome.rvHomeTrendingBook.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
         viewHome.rvHomeTrendingBook.setFocusable(false);
         viewHome.rvHomeTrendingBook.setNestedScrollingEnabled(false);
+
+        viewHome.imageFilter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intentFil = new Intent(getActivity(), FilterActivity.class);
+                startActivity(intentFil);
+            }
+        });
 
         if (method.isNetworkAvailable()) {
             if (method.getIsLogin()) {
