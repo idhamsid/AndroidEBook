@@ -300,6 +300,7 @@ public class PDFShow extends AppCompatActivity implements OnPageChangeListener, 
                 @Override
                 public void onResponse(@NotNull retrofit2.Call<JsonObject> call, @NotNull retrofit2.Response<JsonObject> response) {
                     Log.i("adslog", "onResponse: "+response);
+                    method.addFavorite(PDFShow.this, bookId, pageNo);
                 }
 
                 @Override

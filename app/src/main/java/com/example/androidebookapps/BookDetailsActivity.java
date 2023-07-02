@@ -24,6 +24,7 @@ import com.example.rest.ApiInterface;
 import com.example.util.API;
 import com.example.util.BannerAds;
 import com.example.util.Constant;
+import com.example.util.DatabaseHandler;
 import com.example.util.FavouriteIF;
 import com.example.util.Method;
 import com.example.util.OnClick;
@@ -48,6 +49,8 @@ public class BookDetailsActivity extends AppCompatActivity {
     RelatedAdapter relatedAdapter;
     BookDetailList bookDetailListPos;
 
+    DatabaseHandler db;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,7 +59,7 @@ public class BookDetailsActivity extends AppCompatActivity {
         setContentView(viewBookDetail.getRoot());
         method = new Method(BookDetailsActivity.this);
         method.forceRTLIfSupported();
-
+        db = new DatabaseHandler(this);
         Intent intent = getIntent();
         postBookId = intent.getStringExtra("BOOK_ID");
         if (intent.hasExtra("LAST_POS")) {
@@ -469,8 +472,20 @@ public class BookDetailsActivity extends AppCompatActivity {
                 }
             }
         }
+
+
         // TODO load last page
         if (bookDetailListPos.getPost_file_url().contains(".epub")) {
+            try {
+                pageNo = db.getEpub(postBookId);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            if(pageNo == null ){
+                lastPosNum = "";
+            }
+            Log.v("adslogx", "openBook: pageNo "+pageNo);
+
             DownloadEpub downloadEpub = new DownloadEpub(BookDetailsActivity.this);
             downloadEpub.pathEpub(bookDetailListPos.getPost_file_url(), bookDetailListPos.getPost_id(), lastPosNum, pageNo);
         } else {

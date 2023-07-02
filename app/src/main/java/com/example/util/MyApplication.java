@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.StrictMode;
+import android.util.Log;
 
 import androidx.multidex.MultiDex;
 
@@ -41,7 +42,7 @@ public class MyApplication extends Application {
         builder.detectFileUriExposure();
 
         OneSignal.initWithContext(this);
-        OneSignal.setAppId("4aa392b0-19e0-4fd9-9256-d8ffdafc77c9");
+        OneSignal.setAppId("fb2af4bf-96ab-4423-9864-e62871644be0");
         OneSignal.setNotificationOpenedHandler(new NotificationExtenderExample());
 
     }
@@ -58,6 +59,12 @@ public class MyApplication extends Application {
                 String type = jsonObject.getString("type");
                 String titleName = jsonObject.getString("post_title");
                 String url = jsonObject.getString("external_link");
+
+
+                Log.v("adslogos", "notificationOpened: id "+id);
+                Log.v("adslogos", "notificationOpened: type "+type);
+                Log.v("adslogos", "notificationOpened: titleName "+titleName);
+                Log.v("adslogos", "notificationOpened: url "+url);
 
                 Intent intent;
                 if (id.equals("") && !url.equals("false") && !url.trim().isEmpty()) {

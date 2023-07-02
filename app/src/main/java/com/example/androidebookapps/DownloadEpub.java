@@ -17,6 +17,7 @@ import com.example.util.DatabaseHandler;
 import com.example.util.Method;
 import com.folioreader.FolioReader;
 import com.folioreader.model.locators.ReadLocator;
+import com.folioreader.util.ReadLocatorListener;
 import com.google.android.material.textview.MaterialTextView;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -111,7 +112,7 @@ public class DownloadEpub {
                     public void onFailure(@NonNull Call call, @NonNull IOException e) {
                         Log.e("adslogx", "=============onFailure===============");
                         e.printStackTrace();
-                        Log.d("error_downloading", e.toString());
+                        Log.d("adslogx", "error dowwnloadiing "+e.toString());
                         dialog.dismiss();
                     }
 
@@ -160,7 +161,7 @@ public class DownloadEpub {
                             source.close();
 
                         } catch (Exception e) {
-                            Log.d("show_data", e.toString());
+                            Log.d("adslogx", e.toString());
                         }
                     }
                 });
@@ -168,7 +169,7 @@ public class DownloadEpub {
             }
         } catch (Exception e) {
             dialog.dismiss();
-            Log.d("exception_error", e.toString());
+            Log.d("adslogx", "Exception "+e.toString());
             method.alertBox(activity.getResources().getString(R.string.failed_try_again));
         }
 
@@ -180,16 +181,18 @@ public class DownloadEpub {
         folioReader.setOnHighlightListener((highlight, type) -> {
 
         });
-
+        Log.e("adslogx", "openBook: posType "+posType);
         if (posType.equals("continuePos")){
             ReadLocator readPosition = ReadLocator.fromJson(pageNum);
             folioReader.setReadLocator(readPosition);
         }
 
         folioReader.openBook(path);
-        folioReader.setReadLocatorListener(readLocator -> {
-            bookContinuePageData(id,method.getUserId(),readLocator.toJson());
-
+        folioReader.setReadLocatorListener(new ReadLocatorListener() {
+            @Override
+            public void saveReadLocator(ReadLocator readLocator) {
+                bookContinuePageData(id,method.getUserId(),readLocator.toJson());
+            }
         });
 
     }
@@ -217,8 +220,10 @@ public class DownloadEpub {
                     Log.i("adslogx", "onResponse: "+response);
                     if (db.checkIdEpub(bookId)) {
                         db.addEpub(bookId, pageNo);
+                        Log.w("adslogx", "onResponse: add "+pageNo);
                     } else {
                         db.updateEpub(bookId, pageNo);
+                        Log.w("adslogx", "onResponse: update "+pageNo);
                     }
                 }
 

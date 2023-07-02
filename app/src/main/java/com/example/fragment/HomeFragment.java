@@ -125,6 +125,7 @@ public class HomeFragment extends Fragment {
                 if (viewHome.edtHomeSearch.getText().toString().isEmpty()) {
                     Toast.makeText(requireActivity(), getString(R.string.search_msg), Toast.LENGTH_SHORT).show();
                 } else {
+                    Log.i("adslogss", "onClick: luv button");
                     Intent intentSearch = new Intent(requireActivity(), BookListBySubCatActivity.class);
                     intentSearch.putExtra("postSubCatName", viewHome.edtHomeSearch.getText().toString());
                     intentSearch.putExtra("type", "SearchHome");
@@ -140,8 +141,9 @@ public class HomeFragment extends Fragment {
                 if (viewHome.edtHomeSearch.getText().toString().isEmpty()) {
                     Toast.makeText(requireActivity(), getString(R.string.search_msg), Toast.LENGTH_SHORT).show();
                 } else {
+                    Log.i("adslogss", "onClick: enter ");
                     Intent intentSearch = new Intent(requireActivity(), BookListBySubCatActivity.class);
-                    intentSearch.putExtra("searchText", viewHome.edtHomeSearch.getText().toString());
+                    intentSearch.putExtra("postSubCatName", viewHome.edtHomeSearch.getText().toString());
                     intentSearch.putExtra("type", "SearchHome");
                     startActivity(intentSearch);
                     viewHome.edtHomeSearch.setText("");

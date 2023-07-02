@@ -17,11 +17,13 @@ import androidx.appcompat.app.AppCompatDelegate;
 import com.applovin.sdk.AppLovinMediationProvider;
 import com.applovin.sdk.AppLovinSdk;
 import com.example.androidebookapps.databinding.ActivitySplashBinding;
+import com.example.item.SubCatListBook;
 import com.example.response.AppDetailRP;
 import com.example.rest.ApiClient;
 import com.example.rest.ApiInterface;
 import com.example.util.API;
 import com.example.util.Constant;
+import com.example.util.DatabaseHandler;
 import com.example.util.Method;
 import com.example.util.StatusBar;
 import com.facebook.FacebookSdk;
@@ -36,6 +38,7 @@ import com.wortise.ads.consent.ConsentManager;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Currency;
 
 import kotlin.Unit;
@@ -52,14 +55,14 @@ public class SplashActivity extends AppCompatActivity {
     Boolean isCancelled = false;
     int WAIT = 3000;
     private String id = "0", type = "", title = "";
-
+    DatabaseHandler db;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         StatusBar.init(SplashActivity.this);
         method = new Method(SplashActivity.this);
         method.forceRTLIfSupported();
-
+        db = new DatabaseHandler(this);
         switch (method.themMode()) {
             case "system":
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
@@ -226,8 +229,31 @@ public class SplashActivity extends AppCompatActivity {
                 finishAffinity();
                 break;
             case "books":
-                startActivity(new Intent(SplashActivity.this, BookDetailsActivity.class)
-                        .putExtra("BOOK_ID", id));
+                String s = null;
+                try {
+                     s = db.getEpub(id);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+                ArrayList<SubCatListBook> favorites = method.getFavorites(SplashActivity.this);
+                String lastPdf = null;
+                if (favorites != null) {
+                    for (SubCatListBook t : favorites) {
+                        if (t.getPost_id().equals(id)) {
+                            lastPdf = "not nulss";
+                        }
+                    }
+                }
+
+                if(s != null || lastPdf != null){
+                    startActivity(new Intent(SplashActivity.this, BookDetailsActivity.class)
+                            .putExtra("BOOK_ID", id)
+                            .putExtra("LAST_POS","continuePos"));
+
+                } else {
+                    startActivity(new Intent(SplashActivity.this, BookDetailsActivity.class)
+                            .putExtra("BOOK_ID", id));
+                }
                 finishAffinity();
                 break;
             case "deepLink":
