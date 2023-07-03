@@ -88,49 +88,51 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
             public void onClick(View v) {
                 Log.e("adslogd", "onClick: adapter");
 
-                Call<SubCatListBookRP> call;
-                JsonObject jsObj = (JsonObject) new Gson().toJsonTree(new API(activity));
-                jsObj.addProperty("user_id", method.getUserId());
-                ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
-                call = apiService.getContinueData(API.toBase64(jsObj.toString()));
-                String json = new Gson().toJson(jsObj);
-                Log.v("adslogd", "bookContinuePageData: json " + json);
-                call.enqueue(new Callback<SubCatListBookRP>() {
-                    @Override
-                    public void onResponse(Call<SubCatListBookRP> call, Response<SubCatListBookRP> response) {
-                        SubCatListBookRP favListBookRP = response.body();
-                        List<SubCatListBook> bookContent = favListBookRP.getSubCatListBooks();
+                if(!method.isNetworkAvailable()){
+                    AdInterstitialAds.ShowInterstitialAds(activity,holder.getBindingAdapterPosition(),onClick);
+                 } else {
+                    Call<SubCatListBookRP> call;
+                    JsonObject jsObj = (JsonObject) new Gson().toJsonTree(new API(activity));
+                    jsObj.addProperty("user_id", method.getUserId());
+                    ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+                    call = apiService.getContinueData(API.toBase64(jsObj.toString()));
+                    String json = new Gson().toJson(jsObj);
+                    Log.v("adslogd", "bookContinuePageData: json " + json);
+                    call.enqueue(new Callback<SubCatListBookRP>() {
+                        @Override
+                        public void onResponse(Call<SubCatListBookRP> call, Response<SubCatListBookRP> response) {
+                            SubCatListBookRP favListBookRP = response.body();
+                            List<SubCatListBook> bookContent = favListBookRP.getSubCatListBooks();
 
-                        Log.i("adslogad", "onResponse: book size " + favListBookRP.getSubCatListBooks().size());
-                        if (position <= favListBookRP.getSubCatListBooks().size()-1) {
+                            Log.i("adslogad", "onResponse: book size " + favListBookRP.getSubCatListBooks().size());
+                            if (position <= favListBookRP.getSubCatListBooks().size() - 1) {
 
-                            if (favListBookRP != null) {
-                                for (SubCatListBook s : bookContent) {
-                                    if (s.getPost_id().equals(downloadLists.get(position).getId())) {
-                                        Log.w("adslogad", "addFavorite: favorites.indexOf(s); " + bookContent.indexOf(s));
-                                        int i = bookContent.indexOf(s);
-                                        pageNum  = bookContent.get(i).getPage_num();
-                                        Log.i("adslogad", "onResponse: judul "+bookContent.get(i).getPost_title());
-                                        Log.i("adslogad", "onResponse: pageNum "+pageNum);
+                                if (favListBookRP != null) {
+                                    for (SubCatListBook s : bookContent) {
+                                        if (s.getPost_id().equals(downloadLists.get(position).getId())) {
+                                            Log.w("adslogad", "addFavorite: favorites.indexOf(s); " + bookContent.indexOf(s));
+                                            int i = bookContent.indexOf(s);
+                                            pageNum = bookContent.get(i).getPage_num();
+                                            Log.i("adslogad", "onResponse: judul " + bookContent.get(i).getPost_title());
+                                            Log.i("adslogad", "onResponse: pageNum " + pageNum);
+                                        }
                                     }
                                 }
-                            }
 
-                            Log.i("adslogad", "onResponse: pageNum"+pageNum);
-                            method.onClickAd(position, "download", downloadLists.get(position).getId(), "", downloadLists.get(position).getId(), "", downloadLists.get(position).getUrl(), pageNum);
-                        } else
-                            method.onClickAd(position, "download", downloadLists.get(position).getId(), "", downloadLists.get(position).getId(), "", downloadLists.get(position).getUrl(), "0");
-
+                                Log.i("adslogad", "onResponse: pageNum" + pageNum);
+                                method.onClickAd(position, "download", downloadLists.get(position).getId(), "", downloadLists.get(position).getId(), "", downloadLists.get(position).getUrl(), pageNum);
+                            } else
+                                method.onClickAd(position, "download", downloadLists.get(position).getId(), "", downloadLists.get(position).getId(), "", downloadLists.get(position).getUrl(), "0");
 
 
-                    }
+                        }
 
-                    @Override
-                    public void onFailure(Call<SubCatListBookRP> call, Throwable t) {
+                        @Override
+                        public void onFailure(Call<SubCatListBookRP> call, Throwable t) {
 
-                    }
-                });
-
+                        }
+                    });
+                }
             }
         });
 

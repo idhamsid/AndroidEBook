@@ -265,7 +265,7 @@ public class FilterActivity extends AppCompatActivity {
                     }
 
                 } catch (Exception e) {
-                    Log.d("exception_error", e.toString());
+                    // Log.d("exception_error", e.toString());
                     method.alertBox(getResources().getString(R.string.failed_try_again));
                 }
 
@@ -275,7 +275,7 @@ public class FilterActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NotNull Call<AuthorRP> call, @NotNull Throwable t) {
                 // Log error here since request failed
-                Log.e("fail", t.toString());
+                // Log.e("fail", t.toString());
                 viewFilterBinding.llNoData.clNoDataFound.setVisibility(View.VISIBLE);
                 viewFilterBinding.progressHome.setVisibility(View.GONE);
                 method.alertBox(getResources().getString(R.string.failed_try_again));
@@ -334,7 +334,7 @@ public class FilterActivity extends AppCompatActivity {
                     }
 
                 } catch (Exception e) {
-                    Log.d("exception_error", e.toString());
+                    // Log.d("exception_error", e.toString());
                     method.alertBox(getResources().getString(R.string.failed_try_again));
                 }
 
@@ -344,7 +344,7 @@ public class FilterActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NotNull Call<CatRP> call, @NotNull Throwable t) {
                 // Log error here since request failed
-                Log.e("fail", t.toString());
+                // Log.e("fail", t.toString());
                 viewFilterBinding.llNoDataCat.clNoDataFound.setVisibility(View.VISIBLE);
                 viewFilterBinding.progressCategory.setVisibility(View.GONE);
                 method.alertBox(getResources().getString(R.string.failed_try_again));

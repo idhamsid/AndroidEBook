@@ -191,7 +191,7 @@ public class RateReviewActivity extends AppCompatActivity {
                     }
 
                 } catch (Exception e) {
-                    Log.d("exception_error", e.toString());
+                    // Log.d("exception_error", e.toString());
                     method.alertBox(getResources().getString(R.string.failed_try_again));
                 }
                 viewRateReviewBinding.progressRate.setVisibility(View.GONE);

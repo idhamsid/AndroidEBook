@@ -469,6 +469,7 @@ public class BookDetailsActivity extends AppCompatActivity {
                 if (s.getPost_id().equals(postBookId)) {
                     int i = favorites.indexOf(s);
                     pageNo = favorites.get(i).getPage_num();
+                    lastPosNum = "continuePos";
                 }
             }
         }
@@ -483,12 +484,15 @@ public class BookDetailsActivity extends AppCompatActivity {
             }
             if(pageNo == null ){
                 lastPosNum = "";
-            }
-            Log.v("adslogx", "openBook: pageNo "+pageNo);
+            } else lastPosNum = "continuePos";
+            // Log.v("adslogx", "openBook: pageNo "+pageNo);
 
             DownloadEpub downloadEpub = new DownloadEpub(BookDetailsActivity.this);
             downloadEpub.pathEpub(bookDetailListPos.getPost_file_url(), bookDetailListPos.getPost_id(), lastPosNum, pageNo);
         } else {
+            // Log.e("adslogf", "openBook: pageNo "+pageNo);
+            // Log.w("adslogf", "openBook: lastPosNum "+lastPosNum);
+
             startActivity(new Intent(BookDetailsActivity.this, PDFShow.class)
                     .putExtra("id", bookDetailListPos.getPost_id())
                     .putExtra("link", bookDetailListPos.getPost_file_url())

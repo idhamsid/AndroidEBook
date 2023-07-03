@@ -107,6 +107,7 @@ public class SplashActivity extends AppCompatActivity {
 
             }, SPLASH_TIME_OUT);
         } else {
+            // Log.i("adslogoff", "onCreate: splash");
             Intent intentMain = new Intent(getApplicationContext(), DownloadActivity.class);
             intentMain.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intentMain);
@@ -159,7 +160,7 @@ public class SplashActivity extends AppCompatActivity {
                             String symbol = currency.getSymbol();
                             str_package = appDetailRP.getAppLists().get(0).getAppPackageName();
                             Constant.constantCurrency = symbol;
-                            Log.i("adslog", "onResponse: "+str_package);
+                            // Log.i("adslog", "onResponse: "+str_package);
                             if (str_package.equals(getPackageName())) {
                                 new Handler().postDelayed(() -> {
                                     if (!isCancelled) {

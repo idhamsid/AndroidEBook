@@ -113,6 +113,7 @@ public class PDFShow extends AppCompatActivity implements OnPageChangeListener, 
                 pdfFile(uri, id, 0);
             }
         } else {
+            // Log.w("adslogoff", "onCreate: pdfshow 116 conPos "+conPos);
             File file = new File(uri);
             if (conPos.equals("continuePos")) {
                 displayFromFile(file, Integer.parseInt(pageNo));
@@ -218,7 +219,7 @@ public class PDFShow extends AppCompatActivity implements OnPageChangeListener, 
                             @Override
                             public void onUIProgressFinish() {
                                 super.onUIProgressFinish();
-                                Log.e("TAG", "onUIProgressFinish:");
+                                // Log.e("adslogf", "onUIProgressFinish:");
                                 dialog.dismiss();
                                 displayFromFile(file, pageNumber);
                             }
@@ -278,37 +279,47 @@ public class PDFShow extends AppCompatActivity implements OnPageChangeListener, 
     private void bookContinuePageData(String bookId, String userId, String pageNo) {
         //TODO Save last page
         if (userId.isEmpty()) {
-            Log.i("adslog", "bookContinuePageData: user id null om");
-            Log.v("adslog", "bookContinuePageData: pageNo 287 ps " + pageNo);
-            Log.v("adslog", "bookContinuePageData: bookId " + bookId);
+            // Log.i("adslogf", "bookContinuePageData: user id null om");
+            // Log.v("adslogf", "bookContinuePageData: pageNo 287 ps " + pageNo);
+            Log.v("adslogf", "bookContinuePageData: bookId " + bookId);
             method.addFavorite(this, bookId, pageNo);
-            Log.i("adslog", "" +
-                    "bookContinuePageData: getfav " + method.getFavorites(this).size());
 
         } else {
-            Log.v("adslogf", "bookContinuePageData: pageNo 293 ps " + pageNo);
-            Log.v("adslogf", "bookContinuePageData: userId " + userId);
-            Log.v("adslogf", "bookContinuePageData: bookId " + bookId);
-            JsonObject jsObj = (JsonObject) new Gson().toJsonTree(new API(PDFShow.this));
-            jsObj.addProperty("user_id", userId);
-            jsObj.addProperty("post_id", bookId);
-            jsObj.addProperty("page_num", pageNo);
-            ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
-            retrofit2.Call<JsonObject> call = apiService.getBookContinueData(API.toBase64(jsObj.toString()));
-            String json = new Gson().toJson(jsObj);
-            call.enqueue(new retrofit2.Callback<JsonObject>() {
-                @Override
-                public void onResponse(@NotNull retrofit2.Call<JsonObject> call, @NotNull retrofit2.Response<JsonObject> response) {
-                    Log.i("adslog", "onResponse: "+response);
-                    method.addFavorite(PDFShow.this, bookId, pageNo);
-                }
 
-                @Override
-                public void onFailure(@NotNull retrofit2.Call<JsonObject> call, @NotNull Throwable t) {
-                    // Log error here since request failed
-                    Log.e("fail", t.toString());
-                }
-            });
+            if(!method.isNetworkAvailable()){
+                method.addFavorite(PDFShow.this, bookId, pageNo);
+            } else {
+
+
+                // Log.v("adslogf", "bookContinuePageData: pageNo 293 ps " + pageNo);
+                // Log.v("adslogf", "bookContinuePageData: userId " + userId);
+                // Log.v("adslogf", "bookContinuePageData: bookId " + bookId);
+                JsonObject jsObj = (JsonObject) new Gson().toJsonTree(new API(PDFShow.this));
+                jsObj.addProperty("user_id", userId);
+                jsObj.addProperty("post_id", bookId);
+                jsObj.addProperty("page_num", pageNo);
+                ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+                retrofit2.Call<JsonObject> call = apiService.getBookContinueData(API.toBase64(jsObj.toString()));
+                String json = new Gson().toJson(jsObj);
+                call.enqueue(new retrofit2.Callback<JsonObject>() {
+                    @Override
+                    public void onResponse(@NotNull retrofit2.Call<JsonObject> call, @NotNull retrofit2.Response<JsonObject> response) {
+                        // Log.i("adslogf", "onResponse: " + response);
+                        method.addFavorite(PDFShow.this, bookId, pageNo);
+                    }
+
+                    @Override
+                    public void onFailure(@NotNull retrofit2.Call<JsonObject> call, @NotNull Throwable t) {
+                        // Log error here since request failed
+                        // Log.e("adslogf", t.toString());
+                    }
+                });
+
+            }
+
+
+
+
         }
     }
 }

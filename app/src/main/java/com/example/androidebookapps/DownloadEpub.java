@@ -110,17 +110,17 @@ public class DownloadEpub {
                 call.enqueue(new Callback() {
                     @Override
                     public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                        Log.e("adslogx", "=============onFailure===============");
+                        // Log.e("adslogx", "=============onFailure===============");
                         e.printStackTrace();
-                        Log.d("adslogx", "error dowwnloadiing "+e.toString());
+                        // Log.d("adslogx", "error dowwnloadiing "+e.toString());
                         dialog.dismiss();
                     }
 
                     @Override
                     public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                        Log.e("adslogx", "=============onResponse===============");
-                        Log.e("adslogx", "request headers:" + response.request().headers());
-                        Log.e("adslogx", "response headers:" + response.headers());
+                        // Log.e("adslogx", "=============onResponse===============");
+                        // Log.e("adslogx", "request headers:" + response.request().headers());
+                        // Log.e("adslogx", "response headers:" + response.headers());
                         assert response.body() != null;
                         ResponseBody responseBody = ProgressHelper.withProgress(response.body(), new ProgressUIListener() {
 
@@ -128,24 +128,24 @@ public class DownloadEpub {
                             @Override
                             public void onUIProgressStart(long totalBytes) {
                                 super.onUIProgressStart(totalBytes);
-                                Log.e("adslogx", "onUIProgressStart:" + totalBytes);
+                                // Log.e("adslogx", "onUIProgressStart:" + totalBytes);
                             }
 
                             @Override
                             public void onUIProgressChanged(long numBytes, long totalBytes, float percent, float speed) {
-                                Log.e("adslogx", "=============start===============");
-                                Log.e("adslogx", "numBytes:" + numBytes);
-                                Log.e("adslogx", "totalBytes:" + totalBytes);
-                                Log.e("adslogx", "percent:" + percent);
-                                Log.e("adslogx", "speed:" + speed);
-                                Log.e("adslogx", "============= end ===============");
+                                // Log.e("adslogx", "=============start===============");
+                                // Log.e("adslogx", "numBytes:" + numBytes);
+                                // Log.e("adslogx", "totalBytes:" + totalBytes);
+                                // Log.e("adslogx", "percent:" + percent);
+                                // Log.e("adslogx", "speed:" + speed);
+                                // Log.e("adslogx", "============= end ===============");
                             }
 
                             //if you don't need this method, don't override this methd. It isn't an abstract method, just an empty method.
                             @Override
                             public void onUIProgressFinish() {
                                 super.onUIProgressFinish();
-                                Log.e("adslogx", "onUIProgressFinish:");
+                                // Log.e("adslogx", "onUIProgressFinish:");
                                 dialog.dismiss();
                                 openBook(fileOpen.toString(), bookId);
                             }
@@ -161,7 +161,7 @@ public class DownloadEpub {
                             source.close();
 
                         } catch (Exception e) {
-                            Log.d("adslogx", e.toString());
+                            // Log.d("adslogx", e.toString());
                         }
                     }
                 });
@@ -169,7 +169,7 @@ public class DownloadEpub {
             }
         } catch (Exception e) {
             dialog.dismiss();
-            Log.d("adslogx", "Exception "+e.toString());
+            // Log.d("adslogx", "Exception "+e.toString());
             method.alertBox(activity.getResources().getString(R.string.failed_try_again));
         }
 
@@ -181,7 +181,7 @@ public class DownloadEpub {
         folioReader.setOnHighlightListener((highlight, type) -> {
 
         });
-        Log.e("adslogx", "openBook: posType "+posType);
+        // Log.e("adslogx", "openBook: posType "+posType);
         if (posType.equals("continuePos")){
             ReadLocator readPosition = ReadLocator.fromJson(pageNum);
             folioReader.setReadLocator(readPosition);
@@ -199,14 +199,27 @@ public class DownloadEpub {
     private DatabaseHandler db;
     private void bookContinuePageData(String bookId,String userId,String pageNo) {
         if (userId.isEmpty()) {
-            Log.i("adslog", "bookContinuePageData: user id null om");
-            Log.v("adslog", "bookContinuePageData: pageNo 198 depub" + pageNo);
-            Log.v("adslog", "bookContinuePageData: bookId " + bookId);
+            // Log.i("adslog", "bookContinuePageData: user id null om");
+            // Log.v("adslog", "bookContinuePageData: pageNo 198 depub" + pageNo);
+            // Log.v("adslog", "bookContinuePageData: bookId " + bookId);
             method.addFavorite(activity,bookId,pageNo);
-            Log.w("adslog", "bookContinuePageData: getfav "+method.getFavorites(activity).size());
+            // Log.w("adslog", "bookContinuePageData: getfav "+method.getFavorites(activity).size());
+            if (db.checkIdEpub(bookId)) {
+                db.addEpub(bookId, pageNo);
+                // Log.w("adslogx", "onResponse: add "+pageNo);
+            } else {
+                db.updateEpub(bookId, pageNo);
+                // Log.w("adslogx", "onResponse: update "+pageNo);
+            }
 
         } else {
-
+            if (db.checkIdEpub(bookId)) {
+                db.addEpub(bookId, pageNo);
+                // Log.w("adslogx", "onResponse: add "+pageNo);
+            } else {
+                db.updateEpub(bookId, pageNo);
+                Log.w("adslogx", "onResponse: update "+pageNo);
+            }
             JsonObject jsObj = (JsonObject) new Gson().toJsonTree(new API(activity));
             jsObj.addProperty("user_id", userId);
             jsObj.addProperty("post_id", bookId);
@@ -218,13 +231,7 @@ public class DownloadEpub {
                 @Override
                 public void onResponse(@NotNull retrofit2.Call<JsonObject> call, @NotNull retrofit2.Response<JsonObject> response) {
                     Log.i("adslogx", "onResponse: "+response);
-                    if (db.checkIdEpub(bookId)) {
-                        db.addEpub(bookId, pageNo);
-                        Log.w("adslogx", "onResponse: add "+pageNo);
-                    } else {
-                        db.updateEpub(bookId, pageNo);
-                        Log.w("adslogx", "onResponse: update "+pageNo);
-                    }
+
                 }
 
                 @Override

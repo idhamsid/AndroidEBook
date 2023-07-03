@@ -196,7 +196,7 @@ public class EditProfileActivity extends AppCompatActivity {
                     }
 
                 } catch (Exception e) {
-                    Log.d("exception_error", e.toString());
+                    // Log.d("exception_error", e.toString());
                     method.alertBox(getResources().getString(R.string.failed_try_again));
                 }
 
@@ -207,7 +207,7 @@ public class EditProfileActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NotNull Call<EditProfileRP> call, @NotNull Throwable t) {
                 // Log error here since request failed
-                Log.e("fail", t.toString());
+                // Log.e("fail", t.toString());
                 progressDialog.dismiss();
                 method.alertBox(getResources().getString(R.string.failed_try_again));
             }

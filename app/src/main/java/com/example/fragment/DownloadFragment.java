@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.example.adapter.DownloadAdapter;
+import com.example.androidebookapps.BookDetailsActivity;
 import com.example.androidebookapps.PDFShow;
 import com.example.androidebookapps.R;
 import com.example.androidebookapps.databinding.FragmentFavoriteBinding;
@@ -49,7 +50,7 @@ public class DownloadFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         viewDownload = FragmentFavoriteBinding.inflate(inflater, container, false);
-
+        // Log.i("adslogoff", "onCreate: df");
         db = new DatabaseHandler(getActivity());
         databaseLists = new ArrayList<>();
         method = new Method(requireActivity());
@@ -57,18 +58,17 @@ public class DownloadFragment extends Fragment {
             requireActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.app_bg_orange));
         }
 
-
         onClicks = (position, type, id, subId, title, fileType, fileUrl, otherData) -> {
-            Log.e("adslogf", "onCreateView: fragment ");
-            Log.v("adslogf", "onCreateView: downloadLists.get(position).getId() "+downloadLists.get(position).getId());
-            Log.w("adslogf", "onCreateView: fileUrl "+fileUrl);
+            // Log.e("adslogf", "onCreateView: fragment ");
+            // Log.v("adslogf", "onCreateView: downloadLists.get(position).getId() "+downloadLists.get(position).getId());
+            // Log.w("adslogf", "onCreateView: fileUrl "+fileUrl);
 
             String postLast = null;
             if(otherData != null){
                 postLast = "continuePos";
             }
-            Log.e("adslogf", "onCreateView: postLast "+postLast);
-            Log.e("adslogf", "onCreateView: postLast "+otherData);
+            // Log.e("adslogf", "onCreateView: postLast "+postLast);
+            // Log.e("adslogf", "onCreateView: postLast "+otherData);
             if (fileUrl.contains(".epub")) {
                 FolioReader folioReader = FolioReader.get();
                 folioReader.setOnHighlightListener((highlight, type1) -> {
@@ -93,7 +93,7 @@ public class DownloadFragment extends Fragment {
 
                 String[] strings = fileUrl.split("filename-");
                 String[] idPdf = strings[1].split(".pdf");
-                Log.i("adslogd", "onCreateView: df pagenum "+otherData);
+                // Log.i("adslogd", "onCreateView: df pagenum "+otherData);
                 startActivity(new Intent(getActivity(), PDFShow.class)
                         .putExtra("id", idPdf[0])
                         .putExtra("link", fileUrl)
@@ -166,7 +166,7 @@ public class DownloadFragment extends Fragment {
                     }
                 }
             } catch (Exception e) {
-                Log.d("error", e.toString());
+                // Log.d("error", e.toString());
             }
 
             return null;
@@ -181,16 +181,48 @@ public class DownloadFragment extends Fragment {
             } else {
                 downloadAdapter = new DownloadAdapter(getActivity(), downloadLists, "download", onClicks);
                 viewDownload.rvFav.setAdapter(downloadAdapter);
-/*                downloadAdapter.setOnItemClickListener(new OnClicks() {
+                downloadAdapter.setOnItemClickListener(new OnClick() {
                     @Override
                     public void position(int position) {
+                        String pageNo = null;
+                        String postLast = null;
                         DownloadList list = downloadLists.get(position);
+                        ArrayList<SubCatListBook> favorites = method.getFavorites(getActivity());
+
+                        if (favorites != null) {
+                            for (SubCatListBook s : favorites) {
+                                if (s.getPost_id().equals(list.getId())) {
+                                    int i = favorites.indexOf(s);
+                                    pageNo = favorites.get(i).getPage_num();
+                                    postLast = "continuePos";
+                                    // Log.i("adslogoff", "position: pageno "+pageNo);
+                                }
+                            }
+                        }
+
+                        if(pageNo != null){
+                            postLast = "continuePos";
+                        }
                         if (list.getUrl().endsWith(".epub")) {
-//                            FolioReader folioReader = FolioReader.get();
-//                            folioReader.openBook(list.getUrl());
+                            FolioReader folioReader = FolioReader.get();
+                            folioReader.setOnHighlightListener((highlight, type1) -> {
 
+                            });
+                            if (!db.checkIdEpub(list.getId())) {
 
+                                String string = db.getEpub(list.getId());
+                                ReadLocator readPosition = ReadLocator.fromJson(string);
+                                folioReader.setReadLocator(readPosition);
 
+                            }
+                            folioReader.openBook(list.getUrl());
+                            folioReader.setReadLocatorListener(readLocator -> {
+                                if (db.checkIdEpub(list.getId())) {
+                                    db.addEpub(list.getId(), readLocator.toJson());
+                                } else {
+                                    db.updateEpub(list.getId(), readLocator.toJson());
+                                }
+                            });
                         } else {
                             String[] strings = list.getUrl().split("filename-");
                             String[] idPdf = strings[1].split(".pdf");
@@ -200,10 +232,11 @@ public class DownloadFragment extends Fragment {
                                     .putExtra("link", list.getUrl())
                                     .putExtra("toolbarTitle", list.getTitle())
                                     .putExtra("type", "file")
-                                    .putExtra("posLast", ""));
+                                    .putExtra("posLast", postLast)
+                                    .putExtra("PAGE_NUM", pageNo));
                         }
                     }
-                });*/
+                });
             }
 
             viewDownload.progressFav.setVisibility(View.GONE);
